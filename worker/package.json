@@ -1,0 +1,23 @@
+{
+  "name": "worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "wrangler d1 migrations apply directorio-db --local",
+    "db:seed": "wrangler d1 execute directorio-db --local --file=seed.sql"
+  },
+  "dependencies": {
+    "hono": "^4.7.5"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.0",
+    "@cloudflare/workers-types": "^4.20250409.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1",
+    "wrangler": "^4.11.0"
+  }
+}

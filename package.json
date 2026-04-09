@@ -1,0 +1,13 @@
+{
+  "name": "ventanal-candidate-test",
+  "private": true,
+  "scripts": {
+    "dev:worker": "pnpm --filter worker dev",
+    "dev:web": "pnpm --filter web dev",
+    "test": "pnpm --filter worker test"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

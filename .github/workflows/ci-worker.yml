@@ -1,0 +1,32 @@
+name: CI — Worker
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/ci-worker.yml'
+
+jobs:
+  test:
+    name: Worker tests (vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm --filter worker install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm --filter worker test

@@ -1,0 +1,12 @@
+name = "directorio-worker"
+main = "src/index.ts"
+compatibility_date = "2025-04-09"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "directorio-db"
+database_id = "local-only"
+
+[vars]
+ENVIRONMENT = "development"
