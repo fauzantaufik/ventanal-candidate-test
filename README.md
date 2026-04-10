@@ -6,6 +6,20 @@ This is the test repository for the agentic full-stack developer position at our
 
 ---
 
+## Heads-up, Fauzan — branch was refreshed
+
+After we created your branch we pushed a few late updates to `main` that refined the briefing documents (clearer requirements, expanded video checklist, more detail on the feature scope and PR template). We've now merged those into your branch so you're working from the most up-to-date version.
+
+**What changed (docs only — no code):**
+- `TEST_GUIDE.md` — expanded requirements, clearer hard vs bonus items, updated video checklist
+- `FEATURE_REQUEST.md` — added app summary and design guidance
+- `.github/pull_request_template.md` — added sections for MCP, AI review, cloud env, design inspiration
+- `.claude/continuation-prompt-template.md` — added official doc links and practical tips
+
+**What you need to do:** Just pull the latest changes on your branch before starting (`git pull origin candidate/fauzan-20260409`). Your 24-hour clock still starts from the moment you received the test email — the refresh doesn't cost you time. If anything looks inconsistent after the update, ping us and we'll clarify immediately.
+
+---
+
 ## Prerequisites
 
 - Node.js 20+
