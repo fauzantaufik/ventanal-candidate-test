@@ -41,3 +41,6 @@
 ## Related Non-Functional Requirements
 - NFR-07: All UI text must be in Spanish to match the target Venezuelan market
 - NFR-08: Components must use shadcn/ui library for consistent design system integration
+
+## Design
+- [US-02 Design](../design/US-02.md) — Implementation-ready low-level design for this story

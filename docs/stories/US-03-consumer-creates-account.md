@@ -50,3 +50,6 @@ Show Error   Created
 - NFR-04: All API endpoints must return appropriate HTTP status codes with Spanish error messages
 - NFR-07: All UI text must be in Spanish to match the target Venezuelan market
 - NFR-08: Components must use shadcn/ui library for consistent design system integration
+
+## Design
+- [US-03 Design](../design/US-03.md) — Implementation-ready low-level design for this story
