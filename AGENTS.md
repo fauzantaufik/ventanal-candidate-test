@@ -1,8 +1,16 @@
 # AGENTS.md
 
-This repo uses specialized agents to keep the `web/` and `worker/` boundaries clear and to make Hono RPC contract ownership explicit.
+This repo uses specialized agents to keep the `web/`, `worker/`, and `mobile/` boundaries clear and to make Hono RPC contract ownership explicit.
 
-Claude-specific agent files live under `.claude/agents/` (for example `backend.md` and `frontend.md`).
+Claude-specific agent files live under `.claude/agents/`.
+
+## Available agents in `.claude/agents/`
+
+- `backend-architect` — `.claude/agents/backend.md`
+- `frontend-hono-rpc` — `.claude/agents/frontend.md`
+- `mobile-expo` — `.claude/agents/mobile.md`
+- `pm-spec-writer` — `.claude/agents/pm-spec-writer.md`
+- `reviewer` — `.claude/agents/reviewer.agent.md`
 
 ## 1. Frontend Agent — Next.js + Hono RPC
 
@@ -78,6 +86,54 @@ Claude-specific agent files live under `.claude/agents/` (for example `backend.m
 - `mobile/` is bonus/stretch, not a hard requirement
 - Main mobile work currently centers on `mobile/app/business/[slug].tsx`
 - Mobile should stay aligned with the same backend contract used by `web/`
+
+## 4. PM Spec Writer — Product Specs and Story Definition
+
+**Role**
+
+- Owns the spec-first product framing work when a feature idea, enhancement, or API/design request is still ambiguous and needs a clear `docs/SPEC.md` before implementation.
+
+**Does**
+
+- Turns vague requests into structured product requirements and user stories
+- Defines actors, functional requirements, non-functional requirements, edge cases, and open questions
+- Maintains the multi-file spec system under `docs/SPEC.md` and `docs/stories/`
+
+**Does NOT do**
+
+- Jump straight into implementation before the spec is clear
+- Replace the workspace-owning implementation agents for `web/`, `worker/`, or `mobile/`
+- Hide ambiguity that should be clarified up front
+
+**Key constraints / context**
+
+- Use this agent when the request is still product/spec oriented rather than implementation ready
+- `docs/SPEC.md` and `docs/stories/*.md` are the main deliverables
+- The goal is to reduce ambiguity before coding starts
+
+## 5. Reviewer Agent — PR QA and Acceptance Audit
+
+**Role**
+
+- Owns adversarial review before a PR by checking the actual diff against story acceptance criteria, CI expectations, security, and workspace boundaries.
+
+**Does**
+
+- Reviews only the relevant changed files and related story docs
+- Runs the appropriate verification commands for `worker/`, `web/`, and `mobile/`
+- Flags acceptance-criteria gaps, CI failures, security issues, and missing tests
+
+**Does NOT do**
+
+- Edit files directly as part of the review
+- Review the whole repository when only the diff matters
+- Suggest cosmetic refactors that do not affect correctness or review readiness
+
+**Key constraints / context**
+
+- Use this agent when preparing or checking a PR
+- It should focus on the actual diff and the relevant story under `docs/stories/`
+- It is a read-only QA pass, not an implementation agent
 
 ## Boundary rule
 
