@@ -20,16 +20,28 @@ const translations = {
   'nav.logout': { es: 'Cerrar sesión', en: 'Sign out' },
 
   // ── Home page ───────────────────────────────────────────────────────────
-  'home.title': { es: 'Encuentra negocios locales', en: 'Find local businesses' },
-  'home.subtitle': { es: 'Descubre servicios verificados cerca de ti', en: 'Discover verified services near you' },
+  'home.title': { es: 'Descubre negocios locales con reseñas reales', en: 'Discover local businesses with real reviews' },
+  'home.subtitle': { es: 'Busca cafés, talleres y servicios de confianza cerca de ti.', en: 'Search for trusted cafés, workshops, and services near you.' },
   'home.all': { es: 'Todos', en: 'All' },
+  'home.searchPlaceholder': { es: 'Busca por nombre o por lo que ofrecen', en: 'Search by name or what they offer' },
+  'home.searchButton': { es: 'Buscar', en: 'Search' },
+  'home.activeFilters': { es: 'Tu búsqueda actual:', en: 'Your current search:' },
+  'home.filtersHint': { es: 'Explora negocios por nombre, categoría o ciudad.', en: 'Browse businesses by name, category, or city.' },
+  'home.categoriesTitle': { es: 'Explora por categoría', en: 'Browse by category' },
+  'home.summary.search': { es: 'Búsqueda', en: 'Search' },
+  'home.summary.category': { es: 'Categoría', en: 'Category' },
+  'home.summary.city': { es: 'Ciudad', en: 'City' },
+  'home.reset': { es: 'Limpiar filtros', en: 'Clear filters' },
   'home.error.title': { es: 'Error al cargar negocios', en: 'Error loading businesses' },
   'home.error.hint': {
     es: 'Asegúrate de que el worker esté corriendo:',
     en: 'Make sure the worker is running:',
   },
   'home.error.retry': { es: 'Reintentar', en: 'Retry' },
-  'home.empty': { es: 'No se encontraron negocios', en: 'No businesses found' },
+  'home.empty': { es: 'Todavía no hay negocios para mostrar', en: 'There are no businesses to show yet' },
+  'home.emptyHint': { es: 'Vuelve pronto o explora todos los negocios disponibles en tu zona.', en: 'Check back soon or browse all available businesses in your area.' },
+  'home.noResultsTitle': { es: 'No encontramos coincidencias', en: 'No matching businesses found' },
+  'home.noResultsBody': { es: 'Prueba con otro nombre, cambia de categoría o limpia los filtros para ver más negocios.', en: 'Try another name, switch categories, or clear filters to see more businesses.' },
   'home.viewAll': { es: 'Ver todos los negocios', en: 'View all businesses' },
   'home.showing': { es: 'Mostrando', en: 'Showing' },
   'home.of': { es: 'de', en: 'of' },
@@ -37,7 +49,9 @@ const translations = {
 
   // ── Business card ───────────────────────────────────────────────────────
   'business.verified': { es: 'Verificado', en: 'Verified' },
-  'business.noReviews': { es: 'Sin reseñas aún', en: 'No reviews yet' },
+  'business.premium': { es: 'Premium', en: 'Premium' },
+  'business.reviews': { es: 'reseñas', en: 'reviews' },
+  'business.noReviews': { es: 'Sin reseñas aún', en: 'No review yet' },
 
   // ── Badge tooltips ──────────────────────────────────────────────────────
   'badge.premium.tooltip': {

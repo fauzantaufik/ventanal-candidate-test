@@ -7,6 +7,7 @@ pnpm monorepo with three workspaces.
 - [worker/](worker/CLAUDE.md) — Hono API on Cloudflare Workers + D1
 - [web/](web/CLAUDE.md) — Next.js 15 App Router + Supabase Auth
 - [mobile/](mobile/CLAUDE.md) — Expo React Native (bonus/stretch)
+- [doc/](doc) - The "brain" of the project
 
 ## Docs
 
@@ -38,6 +39,7 @@ For cross-workspace changes, keep the owning agent explicit and hand off through
 - When working in Next.js App Router, do not introduce hooks, browser APIs, or context into a server component. First decide whether the feature belongs in a client wrapper or a server component, then implement from that boundary.
 - When a change materially affects architecture, service behavior, or app logic in `web/`, `worker/`, or `mobile/`, update the closest owning doc in the same task. Keep docs non-duplicative to reduce token cost and avoid multiple sources of truth; for implementation details, the code is the source of truth.
 - For browser-fetched worker APIs in local dev, always verify CORS against the actual web origin and port in use (for example `localhost:3000`, `localhost:3001`) before assuming the frontend review flow is broken.
+- If `NEXT_PUBLIC_API_URL` uses an `ngrok-free` tunnel for browser requests, verify the response is not ngrok’s warning interstitial (`200` + non-JSON/no CORS). In that setup, send `ngrok-skip-browser-warning` and allow it in worker CORS.
 - When Supabase Auth is used in `web/` and the worker validates JWTs, prefer verifying real access tokens against Supabase JWKS (with a local test fallback) rather than relying only on a shared dev secret.
 - When an endpoint exposes aggregate fields like `review_count` or `avg_rating`, verify they are derived from the same source of truth as the detailed list data to avoid header/list mismatches.
 
@@ -55,3 +57,7 @@ pnpm dev:worker   # Worker dev server on http://localhost:8787
 pnpm dev:web      # Web dev server on http://localhost:3000
 pnpm test         # All worker tests
 ```
+
+## What's already implemented vs. what needs to be built
+
+Based on the feature request, all of them already been implemenetd, except we may need to polish UI and UX to be better.

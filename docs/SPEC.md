@@ -11,6 +11,11 @@
 - **FR-07:** The system shall validate the JWT on the server before accepting a review.
 - **FR-08:** The system shall show the newly created review in the review list after a successful submission.
 - **FR-09:** The system shall keep the user signed in after a page refresh until the session expires or the user logs out.
+- **FR-10:** The system shall provide a prominent homepage search entry point for business discovery.
+- **FR-11:** The system shall filter businesses by partial name or description using case-insensitive matching.
+- **FR-12:** The system shall allow search and category filters to work together in the same listing flow.
+- **FR-13:** The system shall preserve active search state in URL query parameters for refresh and sharing.
+- **FR-14:** The system shall show business trust signals (rating, review count, verified status, city) directly in search results.
 
 ## Non-Functional Requirements
 
@@ -19,6 +24,10 @@
 - **NFR-03:** Error and validation messages shown to the user should be human-readable in Spanish.
 - **NFR-04:** Review-related UI should handle loading, success, error, and empty states clearly.
 - **NFR-05:** The solution should preserve review integrity by enforcing the one-review-per-user-per-business rule at the backend/database layer.
+- **NFR-06:** Search must reuse the existing paginated business listing flow without breaking pagination metadata or baseline performance.
+- **NFR-07:** Search labels, placeholders, and empty/error states must be Spanish-first and easy to scan.
+- **NFR-08:** The homepage must keep the State Triad pattern for loading, error, and data/empty states during search.
+- **NFR-09:** The search UI should feel warm, local, and familiar without copying Google branding directly.
 
 ## User Stories
 
@@ -29,6 +38,7 @@ Detailed story breakdowns are available in [`/docs/stories`](./stories):
 - [`US-04-consumer-logs-in.md`](./stories/US-04-consumer-logs-in.md)
 - [`US-05-authenticated-consumer-submits-review.md`](./stories/US-05-authenticated-consumer-submits-review.md)
 - [`US-06-system-maintains-review-integrity.md`](./stories/US-06-system-maintains-review-integrity.md)
+- [`US-07-anonymous-visitor-searches-directory.md`](./stories/US-07-anonymous-visitor-searches-directory.md)
 
 ### US-01 — Anonymous visitor reads reviews
 
@@ -70,6 +80,18 @@ As a **logged-in consumer**, I want to submit one review for a business so that 
 - Given the same authenticated user tries to submit another review for the same business, when the request reaches the API, then the system returns HTTP `409` with a clear Spanish message.
 - Given the JWT is missing, invalid, or expired, when the user submits a review, then the system returns HTTP `401` and the UI prompts the user to log in again.
 
+### US-07 — Anonymous visitor searches the directory
+
+As an **anonymous visitor**, I want to search and browse businesses from a Google Reviews–style homepage so that I can quickly discover relevant local services.
+
+**Acceptance Criteria**
+
+- Given the homepage is loaded, when the visitor sees the discovery area, then a prominent search bar appears above the category filters and results.
+- Given the visitor enters a partial business name or descriptive keyword, when they submit the search, then matching businesses are shown.
+- Given a category filter is already active, when the visitor searches, then the results honor both the search term and the category.
+- Given the page is refreshed or the URL is shared, when it reloads, then the active search state is preserved from the query string.
+- Given no businesses match the query, when the results are empty, then the page shows a clear Spanish empty state with an option to clear filters.
+
 ## Edge Cases
 
 - **No rating selected:** the form shall block submission and show a validation error.
@@ -79,6 +101,9 @@ As a **logged-in consumer**, I want to submit one review for a business so that 
 - **Expired JWT during submission:** the API shall return HTTP `401`, and the UI shall ask the user to log in again.
 - **Duplicate review attempt:** the API shall return HTTP `409` and preserve the existing review.
 - **Empty comment with valid rating:** the system shall accept the review because the comment is optional.
+- **Search with no matches:** the homepage shall show an empty-result state with a clear reset action instead of a blank grid.
+- **Whitespace-only search query:** the UI shall treat it as no search and return the normal directory listing.
+- **Invalid or stale category slug in the URL:** the page shall fail gracefully and show either matching results or the standard empty state without crashing.
 
 ## Design Decisions
 

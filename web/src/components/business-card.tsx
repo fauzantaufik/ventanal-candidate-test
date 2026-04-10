@@ -1,8 +1,7 @@
 'use client';
 
+import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
-import { MapPinIcon, CheckIcon, SparklesIcon } from '@/components/icons';
-import StarRating from '@/components/star-rating';
 import type { Business } from '@/lib/api';
 
 interface BusinessCardProps {
@@ -11,58 +10,43 @@ interface BusinessCardProps {
 
 export default function BusinessCard({ business }: BusinessCardProps) {
   const { t } = useI18n();
-  const isPremium = business.verified === 2;
-  const isVerified = business.verified === 1;
-
-  const borderClass = isPremium
-    ? 'border-amber-300 bg-amber-50/40'
-    : isVerified
-    ? 'border-green-200'
-    : 'border-[var(--color-border)]';
+  const verifiedLabel = business.verified === 2
+    ? `⭐ ${t('business.premium')}`
+    : business.verified === 1
+      ? `✓ ${t('business.verified')}`
+      : null;
 
   return (
-    <a
+    <Link
       href={`/${business.slug}`}
-      className={`block bg-white rounded-xl border p-4 hover:border-[var(--color-border-hover)] hover:shadow-md transition-all ${borderClass}`}
+      className="block rounded-xl border border-gray-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-sm"
     >
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-xs text-stone-500">
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <span className="text-xs text-gray-500">
           {business.category_icon} {business.category_name}
         </span>
-        {isPremium && (
-          <span
-            title={t('badge.premium.tooltip')}
-            className="inline-flex items-center gap-1 text-xs text-amber-700 font-medium bg-amber-100 px-2 py-0.5 rounded-full cursor-help"
-          >
-            <SparklesIcon className="h-3 w-3" /> Premium
-          </span>
-        )}
-        {isVerified && (
-          <span
-            title={t('badge.verified.tooltip')}
-            className="inline-flex items-center gap-1 text-xs text-green-700 font-medium bg-green-100 px-2 py-0.5 rounded-full cursor-help"
-          >
-            <CheckIcon className="h-3 w-3" /> {t('business.verified')}
+        {verifiedLabel && (
+          <span className="text-xs font-medium text-green-600">
+            {verifiedLabel}
           </span>
         )}
       </div>
 
-      <h2 className="font-semibold text-stone-900 mb-1">{business.name}</h2>
-      <p className="text-sm text-stone-600 line-clamp-2 mb-3">{business.description}</p>
+      <h2 className="mb-1 font-semibold text-gray-900">{business.name}</h2>
+      {business.description && (
+        <p className="mb-3 line-clamp-2 text-sm text-gray-600">{business.description}</p>
+      )}
 
-      <div className="flex items-center justify-between text-xs text-stone-500">
-        <span className="inline-flex items-center gap-1">
-          <MapPinIcon className="h-3.5 w-3.5 text-[var(--color-primary)]" /> {business.city}
-        </span>
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span>📍 {business.city}</span>
         {business.review_count > 0 ? (
-          <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-            <StarRating rating={business.avg_rating} sizeClassName="h-3.5 w-3.5" className="shrink-0" />
-            <span>{business.avg_rating.toFixed(1)} ({business.review_count})</span>
+          <span className="font-medium text-yellow-600">
+            ★ {business.avg_rating.toFixed(1)} ({business.review_count})
           </span>
         ) : (
           <span>{t('business.noReviews')}</span>
         )}
       </div>
-    </a>
+    </Link>
   );
 }

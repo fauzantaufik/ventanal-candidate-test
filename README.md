@@ -150,6 +150,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
+For worker use tunnel using grok:
+ngrok http 8787
+
 ---
 
 ## Branch setup for candidates
