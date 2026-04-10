@@ -1,6 +1,6 @@
 import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
-import { SignJWT } from 'jose';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { SignJWT, exportJWK, generateKeyPair } from 'jose';
 import app from '../src/index.js';
 
 // ---------------------------------------------------------------------------
@@ -279,6 +279,68 @@ describe('POST /businesses/:slug/reviews', () => {
     // aggregates updated
     expect(body.business.review_count).toBe(1);
     expect(body.business.avg_rating).toBe(5);
+  });
+
+  it('accepts a valid Supabase-style JWKS token', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    const originalFetch = globalThis.fetch;
+    const originalSecret = (env as unknown as { SUPABASE_JWT_SECRET?: string }).SUPABASE_JWT_SECRET;
+    const originalJwksUrl = (env as unknown as { SUPABASE_JWKS_URL?: string }).SUPABASE_JWKS_URL;
+
+    (env as unknown as { SUPABASE_JWT_SECRET?: string }).SUPABASE_JWT_SECRET = undefined;
+    (env as unknown as { SUPABASE_JWKS_URL?: string }).SUPABASE_JWKS_URL = 'https://example-project.supabase.co/auth/v1/.well-known/jwks.json';
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+
+        if (url === 'https://example-project.supabase.co/auth/v1/.well-known/jwks.json') {
+          return new Response(
+            JSON.stringify({
+              keys: [{ ...jwk, kid: 'review-test-key', use: 'sig', alg: 'RS256' }],
+            }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
+        }
+
+        return originalFetch(input);
+      })
+    );
+
+    try {
+      const token = await new SignJWT({
+        email: 'jwks@test.com',
+        user_metadata: { full_name: 'JWKS User' },
+      })
+        .setProtectedHeader({ alg: 'RS256', kid: 'review-test-key' })
+        .setSubject('user-jwks-01')
+        .setIssuer('https://example-project.supabase.co/auth/v1')
+        .setIssuedAt()
+        .setExpirationTime('1h')
+        .sign(privateKey);
+
+      const response = await postReview(POST_SLUG, { rating: 5, comment: 'Token firmado por JWKS' }, token);
+      expect(response.status).toBe(201);
+
+      const body = await response.json() as {
+        success: boolean;
+        data: { user_name: string; rating: number; comment: string | null };
+      };
+
+      expect(body.success).toBe(true);
+      expect(body.data.user_name).toBe('JWKS User');
+      expect(body.data.rating).toBe(5);
+      expect(body.data.comment).toBe('Token firmado por JWKS');
+    } finally {
+      vi.unstubAllGlobals();
+      (env as unknown as { SUPABASE_JWT_SECRET?: string }).SUPABASE_JWT_SECRET = originalSecret;
+      (env as unknown as { SUPABASE_JWKS_URL?: string }).SUPABASE_JWKS_URL = originalJwksUrl;
+    }
   });
 
   it('updates avg_rating correctly when multiple reviews exist in DB for that business', async () => {

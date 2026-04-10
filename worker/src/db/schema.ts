@@ -51,5 +51,7 @@ export interface Review {
 export interface Env {
   DB: D1DatabaseLike;
   ENVIRONMENT: string;
-  SUPABASE_JWT_SECRET: string;
+  SUPABASE_JWT_SECRET?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_JWKS_URL?: string;
 }

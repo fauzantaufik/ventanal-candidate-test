@@ -1,8 +1,91 @@
 import { Hono } from 'hono';
-import { jwtVerify } from 'jose';
+import {
+  createRemoteJWKSet,
+  decodeJwt,
+  decodeProtectedHeader,
+  jwtVerify,
+  type JWTPayload,
+} from 'jose';
 import type { Env, Review } from '../db/schema.js';
 
 const reviews = new Hono<{ Bindings: Env }>();
+const remoteJwkSets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+
+function normalizeSupabaseIssuer(urlOrIssuer: string): string {
+  const url = new URL(urlOrIssuer);
+  const trimmedPath = url.pathname.replace(/\/$/, '');
+  const normalizedPath = trimmedPath.endsWith('/auth/v1') ? trimmedPath : `${trimmedPath}/auth/v1`;
+  return `${url.origin}${normalizedPath}`;
+}
+
+function resolveSupabaseJwksUrl(token: string, env: Env): URL | null {
+  if (env.SUPABASE_JWKS_URL) {
+    return new URL(env.SUPABASE_JWKS_URL);
+  }
+
+  if (env.SUPABASE_URL) {
+    return new URL('/auth/v1/.well-known/jwks.json', env.SUPABASE_URL);
+  }
+
+  try {
+    const { iss } = decodeJwt(token);
+    if (typeof iss !== 'string') return null;
+
+    const issuer = new URL(iss);
+    const isTrustedSupabaseHost =
+      issuer.protocol === 'https:' &&
+      (issuer.hostname.endsWith('.supabase.co') ||
+        issuer.hostname.endsWith('.supabase.in') ||
+        issuer.hostname.endsWith('.supabase.net'));
+
+    if (!isTrustedSupabaseHost) return null;
+
+    return new URL(`${normalizeSupabaseIssuer(iss)}/.well-known/jwks.json`);
+  } catch {
+    return null;
+  }
+}
+
+function getRemoteJwkSet(jwksUrl: URL) {
+  const cacheKey = jwksUrl.toString();
+  const cached = remoteJwkSets.get(cacheKey);
+  if (cached) return cached;
+
+  const created = createRemoteJWKSet(jwksUrl);
+  remoteJwkSets.set(cacheKey, created);
+  return created;
+}
+
+async function verifySupabaseAccessToken(token: string, env: Env): Promise<JWTPayload> {
+  const { alg } = decodeProtectedHeader(token);
+  const verifyOptions = env.SUPABASE_URL
+    ? { issuer: normalizeSupabaseIssuer(env.SUPABASE_URL) }
+    : undefined;
+
+  if (alg?.startsWith('HS')) {
+    if (!env.SUPABASE_JWT_SECRET) {
+      throw new Error('Missing SUPABASE_JWT_SECRET for HS256 token verification');
+    }
+
+    const secret = new TextEncoder().encode(env.SUPABASE_JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret, verifyOptions);
+    return payload;
+  }
+
+  const jwksUrl = resolveSupabaseJwksUrl(token, env);
+  if (jwksUrl) {
+    const { payload } = await jwtVerify(token, getRemoteJwkSet(jwksUrl), verifyOptions);
+    return payload;
+  }
+
+  if (env.SUPABASE_JWT_SECRET) {
+    const secret = new TextEncoder().encode(env.SUPABASE_JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret, verifyOptions);
+    return payload;
+  }
+
+  throw new Error('Missing Supabase JWT verification configuration');
+}
 
 // GET /businesses/:slug/reviews?limit=10&offset=0
 // Public endpoint — no auth required
@@ -69,8 +152,7 @@ reviews.post('/:slug/reviews', async (c) => {
   let userEmail: string;
   let userName: string;
   try {
-    const secret = new TextEncoder().encode(c.env.SUPABASE_JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifySupabaseAccessToken(token, c.env);
     userId = payload.sub as string;
     userEmail = (payload.email as string | undefined) ?? '';
     const meta = payload.user_metadata as { full_name?: string } | undefined;

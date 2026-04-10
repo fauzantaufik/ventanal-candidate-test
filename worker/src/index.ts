@@ -8,12 +8,22 @@ import reviewsRoutes from './routes/reviews.js';
 
 const app = new Hono<{ Bindings: Env }>();
 
+const allowedOriginPatterns = [
+  /^http:\/\/localhost(?::\d+)?$/i,
+  /^https:\/\/[a-z0-9-]+\.vercel\.app$/i,
+];
+
 // Middleware
 app.use('*', logger());
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:3000', 'https://*.vercel.app'],
+    origin: (origin) => {
+      if (!origin) return 'http://localhost:3000';
+      return allowedOriginPatterns.some((pattern) => pattern.test(origin))
+        ? origin
+        : 'http://localhost:3000';
+    },
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
   })

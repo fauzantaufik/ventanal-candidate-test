@@ -31,6 +31,22 @@ describe('GET /businesses', () => {
     expect(body.data.name).toBe('La Cocina de María');
   });
 
+  it('derives review_count and avg_rating from the actual reviews table', async () => {
+    const request = new Request('http://localhost/businesses/la-cocina-de-maria');
+    const ctx = createExecutionContext();
+    const response = await app.fetch(request, env, ctx);
+    await waitOnExecutionContext(ctx);
+
+    expect(response.status).toBe(200);
+    const body = await response.json() as { data: { review_count: number; avg_rating: number } };
+
+    // The default test DB has no seeded review rows; the API should not expose stale
+    // aggregate values from the businesses table that would make the detail header and
+    // the actual review list disagree.
+    expect(body.data.review_count).toBe(0);
+    expect(body.data.avg_rating).toBe(0);
+  });
+
   it('returns 404 for unknown slug', async () => {
     const request = new Request('http://localhost/businesses/non-existent');
     const ctx = createExecutionContext();
