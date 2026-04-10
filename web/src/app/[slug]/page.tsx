@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getBusiness } from '@/lib/api';
 import { notFound } from 'next/navigation';
+import ReviewList from '@/components/review-list';
+import ReviewForm from '@/components/review-form';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -90,20 +92,14 @@ export default async function BusinessPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Reviews section — placeholder */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      {/* Reviews section */}
+      <section id="reviews" className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Reseñas</h2>
-
-        {/* TODO: Replace this placeholder with ReviewList and ReviewForm components */}
-        <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-          <p className="text-sm font-medium">Sistema de reseñas — por implementar</p>
-          <p className="text-xs mt-1">
-            Agrega los componentes ReviewList y ReviewForm aquí.
-            <br />
-            Ver <code>FEATURE_REQUEST.md</code> para los detalles.
-          </p>
+        <ReviewList businessSlug={slug} />
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <ReviewForm businessSlug={slug} />
         </div>
-      </div>
+      </section>
     </div>
   );
 }
