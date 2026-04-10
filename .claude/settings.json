@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "Agent",
+      "Skill",
+      "ToolSearch",
+      "TaskCreate",
+      "TaskGet",
+      "TaskList",
+      "TaskUpdate",
+      "TaskStop",
+      "TaskOutput",
+      "WebFetch",
+      "WebSearch",
+      "NotebookEdit",
+      "mcp__d1-sqlite-inspector__execute_sql",
+      "mcp__d1-sqlite-inspector__search_objects"
+    ],
+    "defaultMode": "auto"
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "d1-sqlite-inspector"
+  ]
+}

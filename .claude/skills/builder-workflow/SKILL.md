@@ -1,6 +1,6 @@
 ---
 name: builder-workflow
-description: "Use when implementing a feature in `web/`, `worker/`, or `mobile/` from repo stories and an optional temporary design doc. Guides backend, frontend, and mobile builder agents through the flow: check relevant `docs/stories/*` and workspace-specific design first, build and verify, then delete the temporary design doc to keep code as the single living source of truth."
+description: "Use when implementing a feature in `web/`, `worker/`, or `mobile/` from repo stories and optional temporary design docs. First route the work to the relevant specialized agent (`backend`, `frontend`, or `mobile`), then follow the story-first build flow: read the doc/design, implement within the owning boundary, verify with real checks, commit meaningful milestones, and archive transient design docs for human cleanup once the code is the living source of truth."
 argument-hint: The user input should include the feature, target workspace (`web`, `worker`, or `mobile`), relevant story path(s), and optional design doc path(s).
 # tools: ['read', 'edit', 'search', 'execute', 'todo', 'agent']
 ---
@@ -20,9 +20,9 @@ If the request is missing key context, ask for:
 
 ## Purpose
 
-Run a **story-first build workflow** for builder agents.
+Run a **story-first build workflow** for the owning specialized agent.
 
-Use transient design only to implement faster and more consistently. Once the feature is complete and verified, remove the temporary design artifact so the shipped code remains the primary living source of truth.
+Use transient design only to implement faster and more consistently. Once the feature is complete and verified, archive the temporary design artifact for human cleanup so the shipped code remains the primary living source of truth.
 
 ---
 
@@ -30,25 +30,29 @@ Use transient design only to implement faster and more consistently. Once the fe
 
 Follow this sequence strictly:
 
-1. **Read the relevant story docs**
-2. **Read the relevant temporary design doc(s)**, if any
-3. **Implement in the correct workspace boundary**
-4. **Verify with real workspace checks**
-5. **Delete the temporary design doc(s)** after successful completion
+1. **Pick the owning specialized agent first**
+2. **Read the relevant story docs**
+3. **Read the relevant temporary design doc(s)**, if any
+4. **Implement in the correct workspace boundary**
+5. **Verify with real workspace checks**
+6. **Commit meaningful milestones per subtask**
+7. **Archive the temporary design doc(s)** after successful completion for human cleanup
 
-> Never delete permanent product docs such as `docs/SPEC.md`, `docs/FEATURE_REQUEST.md`, `docs/stories/*`, or ADRs. Only delete feature-specific temporary design artifacts created to support implementation.
+> Prefer small, reviewable milestone commits for API, UI, tests, or docs. Do not wait until the full story is done for the first meaningful commit.
+>
+> Never delete permanent product docs such as `docs/SPEC.md`, `docs/FEATURE_REQUEST.md`, `docs/stories/*`, or ADRs. Only archive feature-specific temporary design artifacts created to support implementation, and let a human decide when to delete them.
 
 ---
 
 ## Agent Routing
 
-Pick the agent that owns the impacted workspace:
+Pick the available agent that owns the impacted workspace:
 
-- `worker/**` → `backend`
-- `web/**` → `frontendC`
-- `mobile/**` → mobile-focused builder flow
+- `worker/**` → `backend-architect`
+- `web/**` → `frontend-hono-rpc`
+- `mobile/**` → `mobile-expo`
 
-If a feature crosses boundaries, keep ownership explicit and coordinate through the shared contract.
+If a feature crosses boundaries, keep ownership explicit and coordinate through the shared contract. Start with the primary owning agent, then hand off follow-up work to other relevant agents as needed.
 
 ---
 
@@ -83,7 +87,7 @@ If no design exists, implement directly from the story and existing code pattern
 
 ### 3. Build in the owning workspace
 
-Implement the smallest shippable change that matches the current repo patterns.
+Implement the smallest shippable change that matches the current repo patterns, using the routed owning agent for that workspace.
 
 Rules:
 
@@ -110,15 +114,21 @@ Run the checks that match the affected workspace, for example:
 
 Also verify the actual story behavior end-to-end where feasible.
 
-### 5. Delete transient design artifacts
+### 5. Commit meaningful milestones
+
+Once a real subtask is verified, commit it as a small, reviewable milestone. Good checkpoints include backend endpoints, frontend UI slices, tests, docs, or mobile screens.
+
+Do not wait until the entire story is finished for the first commit, but also avoid noisy micro-commits that do not represent a meaningful checkpoint.
+
+### 6. Archive transient design artifacts
 
 After implementation is complete and verification passes:
 
-- delete the temporary feature design doc(s) used during execution
+- archive the temporary feature design doc(s) used during execution for later human cleanup
 - keep the permanent product/story docs intact
 - note in the final summary that code and tests now represent the delivered behavior
 
-If verification is still failing or the work is blocked, do **not** delete the temporary design yet.
+If verification is still failing or the work is blocked, do **not** archive the temporary design yet or create a misleading completion commit.
 
 ---
 
@@ -126,7 +136,7 @@ If verification is still failing or the work is blocked, do **not** delete the t
 
 - **Story vs design conflict** → prefer the story/spec or ask for clarification; do not blindly follow stale design
 - **Multiple designs exist** → use the one matching the active workspace and feature scope
-- **Implementation differs from design** → ship the correct code, mention the divergence, and remove stale temporary design after verification
+- **Implementation differs from design** → ship the correct code, mention the divergence, and archive stale temporary design after verification for human review
 - **Cross-workspace dependency** → call out the handoff explicitly, especially for Hono RPC contracts and auth-sensitive changes
 
 ---
@@ -139,8 +149,9 @@ Return a short implementation summary with:
 2. temporary design file(s) reviewed
 3. workspace(s) changed
 4. verification evidence
-5. deleted temporary design path(s), if any
-6. blockers or follow-ups, if any
+5. milestone commit(s) or checkpoint status
+6. archived temporary design path(s), if any
+7. blockers or follow-ups, if any
 
 ---
 
@@ -152,4 +163,4 @@ Before finishing, confirm that:
 - only relevant designs were used
 - the owning builder agent stayed within its workspace boundary
 - verification was actually run and cited
-- any temporary design doc used for implementation has been removed after successful completion
+- any temporary design doc used for implementation has been archived after successful completion for later human cleanup
