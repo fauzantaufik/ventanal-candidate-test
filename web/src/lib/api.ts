@@ -62,3 +62,35 @@ export async function getCategories(): Promise<CategoryListResponse> {
 
   return (await res.json()) as CategoryListResponse;
 }
+
+// Reviews — manual typed fetch because the worker reviews route is not yet
+// registered with Hono RPC validator middleware, so InferResponseType would
+// resolve to `unknown`. We define the shape here and cast.
+export interface ReviewItem {
+  id: string;
+  user_name: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
+export interface ReviewListResponse {
+  data: ReviewItem[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+  };
+}
+
+export async function getReviews(
+  slug: string,
+  params?: { limit?: number; offset?: number }
+): Promise<ReviewListResponse> {
+  const limit = params?.limit ?? 10;
+  const offset = params?.offset ?? 0;
+  const url = `${API_URL}/businesses/${encodeURIComponent(slug)}/reviews?limit=${limit}&offset=${offset}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch reviews: ${res.status}`);
+  return (await res.json()) as ReviewListResponse;
+}
