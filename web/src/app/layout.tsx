@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -16,23 +17,23 @@ export default function RootLayout({
       <body className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <a href="/" className="text-lg font-bold text-gray-900">
+            <Link href="/" className="text-lg font-bold text-gray-900">
               Directorio Local
-            </a>
+            </Link>
             <nav className="flex items-center gap-4">
               {/* TODO: Add auth nav links here (login/signup/user menu) */}
-              <a
+              <Link
                 href="/auth/login"
                 className="text-sm text-gray-600 hover:text-gray-900"
               >
                 Iniciar sesión
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/auth/signup"
                 className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
               >
                 Registrarse
-              </a>
+              </Link>
             </nav>
           </div>
         </header>

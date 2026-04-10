@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getBusiness } from '@/lib/api';
 import { notFound } from 'next/navigation';
 
@@ -29,9 +30,9 @@ export default async function BusinessPage({ params }: PageProps) {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Back link */}
-      <a href="/" className="text-sm text-blue-600 hover:underline mb-6 inline-block">
+      <Link href="/" className="text-sm text-blue-600 hover:underline mb-6 inline-block">
         ← Volver al directorio
-      </a>
+      </Link>
 
       {/* Business header */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

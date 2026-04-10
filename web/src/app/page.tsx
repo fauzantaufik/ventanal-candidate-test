@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getBusinesses, getCategories } from '@/lib/api';
 import BusinessCard from '@/components/business-card';
 
@@ -47,7 +48,7 @@ export default async function HomePage({
       {/* Category filter */}
       {categories && (
         <div className="flex gap-2 flex-wrap mb-6">
-          <a
+          <Link
             href="/"
             className={`px-3 py-1.5 rounded-full text-sm border ${
               !params.category
@@ -56,9 +57,9 @@ export default async function HomePage({
             }`}
           >
             Todos
-          </a>
+          </Link>
           {categories.data.map((cat) => (
-            <a
+            <Link
               key={cat.id}
               href={`/?category=${cat.slug}`}
               className={`px-3 py-1.5 rounded-full text-sm border ${
@@ -68,7 +69,7 @@ export default async function HomePage({
               }`}
             >
               {cat.icon} {cat.name}
-            </a>
+            </Link>
           ))}
         </div>
       )}
@@ -88,9 +89,9 @@ export default async function HomePage({
       {businesses && businesses.data.length === 0 && (
         <div className="text-center py-16 text-gray-500">
           <p className="text-lg">No se encontraron negocios</p>
-          <a href="/" className="text-blue-600 hover:underline mt-2 inline-block">
+          <Link href="/" className="text-blue-600 hover:underline mt-2 inline-block">
             Ver todos los negocios
-          </a>
+          </Link>
         </div>
       )}
 
