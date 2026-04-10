@@ -12,6 +12,7 @@ pnpm monorepo with three workspaces.
 
 - [README.md](README.md) — setup, prerequisites, deployment, branch workflow
 - [TEST_GUIDE.md](TEST_GUIDE.md) — candidate requirements and deliverables
+- [docs/architecture.md](docs/architecture.md) — system architecture overview
 
 ## Brain project
 
@@ -20,9 +21,12 @@ pnpm monorepo with three workspaces.
 ## Conventions
 
 When writing CLAUDE.md files:
-- Explain *why* a folder or structure exists, not just what's in it
+
+- Explain _why_ a folder or structure exists, not just what's in it
 - Folders with a specific purpose (e.g. brain project, workspace) get their own CLAUDE.md
 - Prefer folder-level references over exhaustive file listings
+- Keep stable docs non-overlapping: `PRODUCT_BRIEF.md` for product context, `architecture.md` for system design, and ADRs for durable architectural decisions
+- Temporary implementation notes belong under `docs/design/`, not source of truth, and be archieved/deleted after stories implementation finished. the source of truth is the living code implemented.
 
 ## Top-level commands
 

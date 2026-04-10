@@ -18,11 +18,7 @@ Our platform does NOT aggregate reviews from Google or other platforms. The only
 
 ## Tech stack
 
-- **Backend**: Cloudflare Worker (Hono) + D1 SQLite database
-- **Frontend**: Next.js 15, Tailwind CSS, shadcn/ui components
-- **Mobile**: Expo (React Native) — iOS and Android
-- **Auth**: Supabase Auth (email/password)
-- **Deployment**: Vercel (web), Cloudflare (worker)
+See [architecture.md](architecture.md) for the full stack, deployment targets, and data flow.
 
 ## Current state of this codebase
 
