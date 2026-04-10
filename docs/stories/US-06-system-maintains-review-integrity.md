@@ -25,6 +25,7 @@ HTTP 409   Save Review
 ```
 
 ## INVEST Validation
+
 - **I**ndependent: ✅ Database constraint handles enforcement
 - **N**egotiable: ✅ Error message format flexible
 - **V**aluable: ✅ Critical for platform trust and integrity
@@ -33,6 +34,7 @@ HTTP 409   Save Review
 - **T**estable: ✅ Duplicate submission scenarios
 
 ## Acceptance Criteria
+
 - [ ] Duplicate review attempts return HTTP 409 with Spanish error message
 - [ ] Database UNIQUE constraint prevents duplicate storage
 - [ ] Error handling gracefully informs user they've already reviewed
@@ -40,9 +42,15 @@ HTTP 409   Save Review
 - [ ] Invalid/expired tokens return HTTP 401
 
 ## Related Functional Requirements
+
 - FR-02: The system shall prevent duplicate review submissions by the same user for the same business, returning HTTP 409 when attempted
 - FR-03: The system shall validate Supabase JWT tokens server-side before accepting any review submission
 
 ## Related Non-Functional Requirements
+
 - NFR-04: All API endpoints must return appropriate HTTP status codes (200, 201, 400, 401, 409, 500) with Spanish error messages
 - NFR-07: All UI text must be in Spanish to match the target Venezuelan market
+
+## Implementation Design
+
+- See [US-06 Design](../design/US-06.md) for the JWT validation, duplicate-prevention strategy, and integrity test plan.

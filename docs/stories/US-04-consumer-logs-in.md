@@ -24,6 +24,7 @@ Show Error  Get JWT &
 ```
 
 ## INVEST Validation
+
 - **I**ndependent: ✅ Uses existing Supabase Auth service
 - **N**egotiable: ✅ Login flow and redirect logic flexible
 - **V**aluable: ✅ Enables authenticated features access
@@ -32,6 +33,7 @@ Show Error  Get JWT &
 - **T**estable: ✅ Login success/failure scenarios
 
 ## Acceptance Criteria
+
 - [ ] Login form accepts email and password
 - [ ] Valid credentials redirect user to original page or business detail
 - [ ] Invalid credentials show error message in Spanish
@@ -40,10 +42,16 @@ Show Error  Get JWT &
 - [ ] Password field obscures input characters
 
 ## Related Functional Requirements
+
 - FR-03: The system shall validate Supabase JWT tokens server-side before accepting any review submission
 
 ## Related Non-Functional Requirements
+
 - NFR-01: JWT token validation must complete within 200ms to maintain responsive user experience
 - NFR-04: All API endpoints must return appropriate HTTP status codes with Spanish error messages
 - NFR-07: All UI text must be in Spanish to match the target Venezuelan market
 - NFR-08: Components must use shadcn/ui library for consistent design system integration
+
+## Implementation Design
+
+- See [US-04 Design](../design/US-04.md) for the implementation-ready plan, affected files, redirect handling, and testing approach.
