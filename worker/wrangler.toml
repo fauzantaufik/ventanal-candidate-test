@@ -10,3 +10,4 @@ database_id = "local-only"
 
 [vars]
 ENVIRONMENT = "development"
+SUPABASE_JWT_SECRET = "test-secret"

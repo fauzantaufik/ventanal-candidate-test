@@ -11,7 +11,8 @@
     "db:seed": "wrangler d1 execute directorio-db --local --file=seed.sql"
   },
   "dependencies": {
-    "hono": "^4.7.5"
+    "hono": "^4.7.5",
+    "jose": "^5.0.0"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.0",

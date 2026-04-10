@@ -1,8 +1,12 @@
 import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { SignJWT } from 'jose';
 import app from '../src/index.js';
 
-// Helpers
+// ---------------------------------------------------------------------------
+// Shared helpers
+// ---------------------------------------------------------------------------
+
 async function fetchReviews(slug: string, params: Record<string, string | number> = {}) {
   const url = new URL(`http://localhost/businesses/${slug}/reviews`);
   for (const [k, v] of Object.entries(params)) {
@@ -14,8 +18,38 @@ async function fetchReviews(slug: string, params: Record<string, string | number
   return response;
 }
 
+async function postReview(
+  slug: string,
+  body: Record<string, unknown>,
+  token?: string
+) {
+  const url = `http://localhost/businesses/${slug}/reviews`;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const ctx = createExecutionContext();
+  const response = await app.fetch(
+    new Request(url, { method: 'POST', headers, body: JSON.stringify(body) }),
+    env,
+    ctx
+  );
+  await waitOnExecutionContext(ctx);
+  return response;
+}
+
+/** Create a valid HS256 JWT signed with the test secret. */
+async function makeToken(userId: string, email: string, name: string): Promise<string> {
+  const secret = new TextEncoder().encode('test-secret');
+  return new SignJWT({ sub: userId, email, user_metadata: { full_name: name } })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('1h')
+    .sign(secret);
+}
+
+// ---------------------------------------------------------------------------
 // Seed reviews into the in-memory D1 before tests run.
 // The migration already ran (via wrangler config), so the tables exist and businesses are seeded.
+// ---------------------------------------------------------------------------
 beforeAll(async () => {
   const db = (env as unknown as { DB: D1Database }).DB;
 
@@ -49,6 +83,9 @@ beforeAll(async () => {
     .run();
 });
 
+// ---------------------------------------------------------------------------
+// GET tests (existing, preserved)
+// ---------------------------------------------------------------------------
 describe('GET /businesses/:slug/reviews', () => {
   it('returns reviews for a valid business slug with correct shape (200)', async () => {
     const response = await fetchReviews('la-cocina-de-maria');
@@ -174,3 +211,176 @@ describe('GET /businesses/:slug/reviews', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// POST tests — use biz-02 (el-asador-del-llano) to avoid polluting GET test data
+// Clean up after each test so duplicate checks don't bleed across cases
+// ---------------------------------------------------------------------------
+describe('POST /businesses/:slug/reviews', () => {
+  const POST_SLUG = 'el-asador-del-llano';
+  const POST_BIZ_ID = 'biz-02';
+
+  afterEach(async () => {
+    const db = (env as unknown as { DB: D1Database }).DB;
+    await db.prepare('DELETE FROM reviews WHERE business_id = ?').bind(POST_BIZ_ID).run();
+    // Reset aggregates so biz-02 reads cleanly for the empty-reviews GET test above
+    await db
+      .prepare('UPDATE businesses SET avg_rating = 0, review_count = 0 WHERE id = ?')
+      .bind(POST_BIZ_ID)
+      .run();
+  });
+
+  it('returns 401 when Authorization header is missing', async () => {
+    const response = await postReview(POST_SLUG, { rating: 4 });
+    expect(response.status).toBe(401);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('Tu sesión no es válida. Inicia sesión de nuevo.');
+  });
+
+  it('returns 401 for a malformed / invalid token', async () => {
+    const response = await postReview(POST_SLUG, { rating: 4 }, 'not.a.valid.jwt');
+    expect(response.status).toBe(401);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('Tu sesión no es válida. Inicia sesión de nuevo.');
+  });
+
+  it('returns 201 with correct shape on first valid review', async () => {
+    const token = await makeToken('user-post-01', 'maria@test.com', 'María López');
+    const response = await postReview(POST_SLUG, { rating: 5, comment: 'La mejor parrilla' }, token);
+
+    expect(response.status).toBe(201);
+
+    const body = await response.json() as {
+      success: boolean;
+      data: {
+        id: string;
+        user_name: string;
+        rating: number;
+        comment: string | null;
+        created_at: string;
+      };
+      business: { avg_rating: number; review_count: number };
+    };
+
+    expect(body.success).toBe(true);
+
+    // data shape
+    expect(body.data).toHaveProperty('id');
+    expect(typeof body.data.id).toBe('string');
+    expect(body.data.user_name).toBe('María López');
+    expect(body.data.rating).toBe(5);
+    expect(body.data.comment).toBe('La mejor parrilla');
+    expect(body.data).toHaveProperty('created_at');
+
+    // private fields must not leak
+    expect(body.data).not.toHaveProperty('user_email');
+    expect(body.data).not.toHaveProperty('user_id');
+
+    // aggregates updated
+    expect(body.business.review_count).toBe(1);
+    expect(body.business.avg_rating).toBe(5);
+  });
+
+  it('updates avg_rating correctly when multiple reviews exist in DB for that business', async () => {
+    const db = (env as unknown as { DB: D1Database }).DB;
+
+    // Pre-seed a rating=3 review so the average can be computed
+    await db
+      .prepare(
+        `INSERT INTO reviews (id, business_id, user_id, user_name, user_email, rating, comment, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+      )
+      .bind('pre-seed-rev', POST_BIZ_ID, 'user-pre', 'Pre User', 'pre@test.com', 3, null)
+      .run();
+    await db
+      .prepare('UPDATE businesses SET avg_rating = 3, review_count = 1 WHERE id = ?')
+      .bind(POST_BIZ_ID)
+      .run();
+
+    const token = await makeToken('user-post-02', 'jose@test.com', 'José Pérez');
+    const response = await postReview(POST_SLUG, { rating: 5 }, token);
+
+    expect(response.status).toBe(201);
+    const body = await response.json() as {
+      success: boolean;
+      business: { avg_rating: number; review_count: number };
+    };
+
+    expect(body.business.review_count).toBe(2);
+    // avg of 3 and 5 = 4.0
+    expect(body.business.avg_rating).toBeCloseTo(4.0);
+  });
+
+  it('returns 409 when the same user submits a duplicate review', async () => {
+    const token = await makeToken('user-dup', 'dup@test.com', 'Dup User');
+
+    // First review — should succeed
+    const first = await postReview(POST_SLUG, { rating: 4 }, token);
+    expect(first.status).toBe(201);
+
+    // Second review — must be rejected
+    const second = await postReview(POST_SLUG, { rating: 5, comment: 'Intento duplicado' }, token);
+    expect(second.status).toBe(409);
+    const body = await second.json() as { error: string };
+    expect(body.error).toBe('Ya has dejado una reseña para este negocio');
+
+    // Confirm only one row in DB for this user+business
+    const db = (env as unknown as { DB: D1Database }).DB;
+    const count = await db
+      .prepare('SELECT COUNT(*) as n FROM reviews WHERE business_id = ? AND user_id = ?')
+      .bind(POST_BIZ_ID, 'user-dup')
+      .first<{ n: number }>();
+    expect(count?.n).toBe(1);
+  });
+
+  it('returns 400 when rating is missing', async () => {
+    const token = await makeToken('user-val-01', 'val01@test.com', 'Val User');
+    const response = await postReview(POST_SLUG, { comment: 'Sin rating' }, token);
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('La reseña enviada no es válida.');
+  });
+
+  it('returns 400 when rating is out of range (6)', async () => {
+    const token = await makeToken('user-val-02', 'val02@test.com', 'Val User 2');
+    const response = await postReview(POST_SLUG, { rating: 6 }, token);
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('La reseña enviada no es válida.');
+  });
+
+  it('returns 400 when rating is 0 (below minimum)', async () => {
+    const token = await makeToken('user-val-03', 'val03@test.com', 'Val User 3');
+    const response = await postReview(POST_SLUG, { rating: 0 }, token);
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('La reseña enviada no es válida.');
+  });
+
+  it('returns 400 when comment exceeds 500 characters', async () => {
+    const token = await makeToken('user-val-04', 'val04@test.com', 'Val User 4');
+    const longComment = 'a'.repeat(501);
+    const response = await postReview(POST_SLUG, { rating: 3, comment: longComment }, token);
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('La reseña enviada no es válida.');
+  });
+
+  it('accepts a review with no comment (comment omitted)', async () => {
+    const token = await makeToken('user-nocomment', 'nocomment@test.com', 'Sin Comentario');
+    const response = await postReview(POST_SLUG, { rating: 4 }, token);
+    expect(response.status).toBe(201);
+    const body = await response.json() as { success: boolean; data: { comment: unknown } };
+    expect(body.success).toBe(true);
+    expect(body.data.comment).toBeNull();
+  });
+
+  it('returns 404 for an unknown business slug', async () => {
+    const token = await makeToken('user-404', '404@test.com', 'Not Found User');
+    const response = await postReview('negocio-que-no-existe', { rating: 3 }, token);
+    expect(response.status).toBe(404);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('Negocio no encontrado');
+  });
+});
+
