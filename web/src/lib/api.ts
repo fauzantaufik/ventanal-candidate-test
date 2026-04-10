@@ -94,3 +94,56 @@ export async function getReviews(
   if (!res.ok) throw new Error(`Failed to fetch reviews: ${res.status}`);
   return (await res.json()) as ReviewListResponse;
 }
+
+export interface SubmitReviewPayload {
+  rating: number;
+  comment?: string;
+}
+
+export interface SubmitReviewResponse {
+  success: true;
+  data: {
+    id: string;
+    user_name: string;
+    rating: number;
+    comment: string | null;
+    created_at: string;
+  };
+  business: {
+    avg_rating: number;
+    review_count: number;
+  };
+}
+
+export class ReviewError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = 'ReviewError';
+  }
+}
+
+export async function submitReview(
+  slug: string,
+  payload: SubmitReviewPayload,
+  token: string,
+): Promise<SubmitReviewResponse> {
+  const res = await fetch(`${API_URL}/businesses/${encodeURIComponent(slug)}/reviews`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.ok) {
+    return (await res.json()) as SubmitReviewResponse;
+  }
+
+  const errBody = await res.json().catch(() => ({})) as { error?: string };
+  const message = errBody.error ?? 'No se pudo guardar la reseña. Inténtalo de nuevo.';
+  throw new ReviewError(message, res.status);
+}

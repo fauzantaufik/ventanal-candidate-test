@@ -13,7 +13,7 @@ export default defineWorkersConfig(async () => {
           wrangler: { configPath: './wrangler.toml' },
           miniflare: {
             d1Databases: { DB: 'directorio-db' },
-            bindings: { TEST_MIGRATIONS: migrations },
+            bindings: { TEST_MIGRATIONS: migrations, SUPABASE_JWT_SECRET: 'test-secret' },
           },
         },
       },
