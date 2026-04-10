@@ -1,7 +1,8 @@
 'use client';
 
 import { useI18n } from '@/lib/i18n';
-import { StarIcon, MapPinIcon, CheckIcon, SparklesIcon } from '@/components/icons';
+import { MapPinIcon, CheckIcon, SparklesIcon } from '@/components/icons';
+import StarRating from '@/components/star-rating';
 import type { Business } from '@/lib/api';
 
 interface BusinessCardProps {
@@ -55,7 +56,8 @@ export default function BusinessCard({ business }: BusinessCardProps) {
         </span>
         {business.review_count > 0 ? (
           <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-            <StarIcon className="h-3.5 w-3.5" /> {business.avg_rating.toFixed(1)} ({business.review_count})
+            <StarRating rating={business.avg_rating} sizeClassName="h-3.5 w-3.5" className="shrink-0" />
+            <span>{business.avg_rating.toFixed(1)} ({business.review_count})</span>
           </span>
         ) : (
           <span>{t('business.noReviews')}</span>

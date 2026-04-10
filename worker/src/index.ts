@@ -25,7 +25,7 @@ app.use(
         : 'http://localhost:3000';
     },
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   })
 );
 

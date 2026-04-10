@@ -3,24 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getReviews, type ReviewItem, type ReviewListResponse } from '@/lib/api';
 import { useI18n, type TranslationKey } from '@/lib/i18n';
-import { StarIcon, StarOutlineIcon } from '@/components/icons';
+import StarRating from '@/components/star-rating';
 
 interface ReviewListProps {
   businessSlug: string;
-}
-
-function StarRating({ rating }: { rating: number }) {
-  const { t } = useI18n();
-  const filled = Math.max(0, Math.min(5, Math.round(rating)));
-  return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`${rating} ${t('reviews.starsLabel')}`}>
-      {Array.from({ length: 5 }).map((_, i) =>
-        i < filled
-          ? <StarIcon key={i} className="h-4 w-4 text-amber-500" />
-          : <StarOutlineIcon key={i} className="h-4 w-4 text-stone-300" />
-      )}
-    </span>
-  );
 }
 
 function ReviewCard({ review }: { review: ReviewItem }) {

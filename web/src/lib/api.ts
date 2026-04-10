@@ -2,6 +2,10 @@ import { hc, type InferRequestType, type InferResponseType } from 'hono/client';
 import type { AppType } from '../../../worker/src/index';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8787';
+const TUNNEL_HEADERS: HeadersInit = /ngrok(?:-free)?\.(?:app|dev|io)$/i.test(new URL(API_URL).hostname)
+  ? { 'ngrok-skip-browser-warning': 'true' }
+  : {};
+
 const client = hc<AppType>(API_URL);
 const categoriesClient = client.categories;
 const businessesClient = client.businesses;
@@ -90,7 +94,9 @@ export async function getReviews(
   const limit = params?.limit ?? 10;
   const offset = params?.offset ?? 0;
   const url = `${API_URL}/businesses/${encodeURIComponent(slug)}/reviews?limit=${limit}&offset=${offset}`;
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: TUNNEL_HEADERS,
+  });
   if (!res.ok) throw new Error(`Failed to fetch reviews: ${res.status}`);
   return (await res.json()) as ReviewListResponse;
 }
@@ -133,6 +139,7 @@ export async function submitReview(
   const res = await fetch(`${API_URL}/businesses/${encodeURIComponent(slug)}/reviews`, {
     method: 'POST',
     headers: {
+      ...TUNNEL_HEADERS,
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },

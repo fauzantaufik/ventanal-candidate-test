@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
-import { StarIcon, StarOutlineIcon, MapPinIcon } from '@/components/icons';
+import { MapPinIcon } from '@/components/icons';
+import StarRating from '@/components/star-rating';
 import ReviewForm from '@/components/review-form';
 import ReviewList from '@/components/review-list';
 
@@ -74,13 +75,7 @@ export default function BusinessDetail({ business, slug }: BusinessDetailProps) 
         {/* Rating summary */}
         {business.review_count > 0 && (
           <div className="flex items-center gap-2 mt-4 pt-4 border-t border-stone-100">
-            <span className="flex items-center gap-0.5 text-amber-500">
-              {Array.from({ length: 5 }).map((_, i) =>
-                i < Math.round(business.avg_rating)
-                  ? <StarIcon key={i} className="h-5 w-5" />
-                  : <StarOutlineIcon key={i} className="h-5 w-5" />
-              )}
-            </span>
+            <StarRating rating={business.avg_rating} sizeClassName="h-5 w-5" className="shrink-0" />
             <span className="text-sm text-stone-500">
               {business.avg_rating.toFixed(1)} ({business.review_count} {t('detail.reviews')})
             </span>
