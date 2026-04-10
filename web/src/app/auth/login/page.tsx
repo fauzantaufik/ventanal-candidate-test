@@ -74,11 +74,17 @@ function LoginForm() {
       const message = error.message.toLowerCase();
       if (
         message.includes('invalid login credentials') ||
-        message.includes('invalid_credentials')
+        message.includes('invalid_credentials') ||
+        message.includes('invalid login') ||
+        message.includes('invalid credentials') ||
+        message.includes('wrong password') ||
+        message.includes('user not found')
       ) {
         setFormError('Correo o contraseña incorrectos.');
       } else if (message.includes('rate limit')) {
-        setFormError('Has intentado demasiadas veces. Espera un momento antes de volver a intentarlo.');
+        setFormError(
+          'Has intentado demasiadas veces. Espera un momento antes de volver a intentarlo.'
+        );
       } else if (message.includes('email not confirmed')) {
         setFormError('Confirma tu correo antes de iniciar sesión.');
       } else {
