@@ -1,6 +1,7 @@
 {
   "name": "ventanal-candidate-test",
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev:worker": "pnpm --filter worker dev",
     "dev:web": "pnpm --filter web dev",
