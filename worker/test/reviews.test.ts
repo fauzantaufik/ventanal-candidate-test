@@ -2,6 +2,56 @@ import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:
 import { describe, it, expect, beforeAll } from 'vitest';
 import app from '../src/index.js';
 
+// ---------------------------------------------------------------------------
+// Shared test helpers
+// ---------------------------------------------------------------------------
+
+/** Base64url-encode a UTF-8 string (JWT header / payload). */
+function base64urlEncodeStr(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+/** Base64url-encode a raw ArrayBuffer (JWT signature). */
+function base64urlEncodeBuffer(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+/**
+ * Create a minimal HS256 JWT signed with the given secret.
+ * Uses the Web Crypto API — works identically inside the Workers runtime.
+ */
+async function createTestJWT(
+  payload: Record<string, unknown>,
+  secret: string,
+): Promise<string> {
+  const header = base64urlEncodeStr(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = base64urlEncodeStr(JSON.stringify(payload));
+  const unsigned = `${header}.${body}`;
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(unsigned));
+  return `${unsigned}.${base64urlEncodeBuffer(sig)}`;
+}
+
+/** The test secret must match wrangler.toml [vars] SUPABASE_JWT_SECRET. */
+const TEST_JWT_SECRET = 'test-secret-for-dev';
+
+/** Future epoch (year 2099) so tokens never expire during tests. */
+const FAR_FUTURE = Math.floor(new Date('2099-01-01').getTime() / 1000);
+
 // Helpers
 async function fetchReviews(slug: string, params: Record<string, string | number> = {}) {
   const url = new URL(`http://localhost/businesses/${slug}/reviews`);
@@ -10,6 +60,25 @@ async function fetchReviews(slug: string, params: Record<string, string | number
   }
   const ctx = createExecutionContext();
   const response = await app.fetch(new Request(url.toString()), env, ctx);
+  await waitOnExecutionContext(ctx);
+  return response;
+}
+
+async function postReview(
+  slug: string,
+  payload: unknown,
+  authHeader?: string,
+) {
+  const url = `http://localhost/businesses/${slug}/reviews`;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authHeader !== undefined) headers['Authorization'] = authHeader;
+
+  const ctx = createExecutionContext();
+  const response = await app.fetch(
+    new Request(url, { method: 'POST', headers, body: JSON.stringify(payload) }),
+    env,
+    ctx,
+  );
   await waitOnExecutionContext(ctx);
   return response;
 }
@@ -174,3 +243,172 @@ describe('GET /businesses/:slug/reviews', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// POST /businesses/:slug/reviews
+// ---------------------------------------------------------------------------
+
+describe('POST /businesses/:slug/reviews', () => {
+  it('201 — valid JWT and valid payload inserts review and updates business aggregates', async () => {
+    const token = await createTestJWT(
+      {
+        sub: 'user-post-01',
+        email: 'nuevo@test.com',
+        user_metadata: { full_name: 'Usuario Nuevo' },
+        exp: FAR_FUTURE,
+      },
+      TEST_JWT_SECRET,
+    );
+
+    // biz-02 (el-asador-del-llano) has 0 reviews after beforeAll cleanup
+    const response = await postReview(
+      'el-asador-del-llano',
+      { rating: 5, comment: 'Excelente parrilla!' },
+      `Bearer ${token}`,
+    );
+
+    expect(response.status).toBe(201);
+
+    const body = await response.json() as {
+      success: boolean;
+      data: { id: string; user_name: string; rating: number; comment: string | null; created_at: string };
+      business: { avg_rating: number; review_count: number };
+    };
+
+    expect(body.success).toBe(true);
+
+    // Review shape
+    expect(body.data.id).toMatch(/^rev-/);
+    expect(body.data.user_name).toBe('Usuario Nuevo');
+    expect(body.data.rating).toBe(5);
+    expect(body.data.comment).toBe('Excelente parrilla!');
+    expect(typeof body.data.created_at).toBe('string');
+
+    // Business aggregates recalculated — only 1 review with rating 5
+    expect(body.business.review_count).toBe(1);
+    expect(body.business.avg_rating).toBe(5);
+  });
+
+  it('201 — comment is optional (null omitted from payload)', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-post-02', email: 'solo-rating@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+
+    // Use biz-03 (sushi-nikkei-caracas) — no prior reviews in this run
+    const response = await postReview(
+      'sushi-nikkei-caracas',
+      { rating: 4 },
+      `Bearer ${token}`,
+    );
+
+    expect(response.status).toBe(201);
+    const body = await response.json() as { success: boolean; data: { comment: string | null } };
+    expect(body.success).toBe(true);
+    expect(body.data.comment).toBeNull();
+  });
+
+  it('400 — rating below range (0)', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-val-01', email: 'val@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+    const response = await postReview('el-asador-del-llano', { rating: 0 }, `Bearer ${token}`);
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toMatch(/calificación/);
+  });
+
+  it('400 — rating above range (6)', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-val-02', email: 'val2@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+    const response = await postReview('el-asador-del-llano', { rating: 6 }, `Bearer ${token}`);
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toMatch(/calificación/);
+  });
+
+  it('400 — rating is a string, not an integer', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-val-03', email: 'val3@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+    const response = await postReview('el-asador-del-llano', { rating: '5' }, `Bearer ${token}`);
+    expect(response.status).toBe(400);
+  });
+
+  it('400 — comment exceeds 500 characters', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-val-04', email: 'val4@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+    const longComment = 'a'.repeat(501);
+    const response = await postReview(
+      'el-asador-del-llano',
+      { rating: 3, comment: longComment },
+      `Bearer ${token}`,
+    );
+    expect(response.status).toBe(400);
+    const body = await response.json() as { error: string };
+    expect(body.error).toMatch(/500/);
+  });
+
+  it('401 — missing Authorization header', async () => {
+    const response = await postReview('el-asador-del-llano', { rating: 4 }, undefined);
+    expect(response.status).toBe(401);
+    const body = await response.json() as { error: string };
+    expect(body.error).toMatch(/autenticaci/i);
+  });
+
+  it('401 — invalid JWT (signed with wrong secret)', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-bad', email: 'bad@test.com', exp: FAR_FUTURE },
+      'wrong-secret',
+    );
+    const response = await postReview('el-asador-del-llano', { rating: 4 }, `Bearer ${token}`);
+    expect(response.status).toBe(401);
+    const body = await response.json() as { error: string };
+    expect(body.error).toMatch(/inválido|expirado/);
+  });
+
+  it('401 — expired JWT', async () => {
+    const pastEpoch = Math.floor(new Date('2000-01-01').getTime() / 1000);
+    const token = await createTestJWT(
+      { sub: 'user-expired', email: 'expired@test.com', exp: pastEpoch },
+      TEST_JWT_SECRET,
+    );
+    const response = await postReview('el-asador-del-llano', { rating: 4 }, `Bearer ${token}`);
+    expect(response.status).toBe(401);
+  });
+
+  it('404 — unknown business slug', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-404', email: 'no-biz@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+    const response = await postReview('negocio-inexistente', { rating: 3 }, `Bearer ${token}`);
+    expect(response.status).toBe(404);
+    const body = await response.json() as { error: string };
+    expect(body.error).toBe('Negocio no encontrado');
+  });
+
+  it('409 — same user submits a second review for the same business', async () => {
+    const token = await createTestJWT(
+      { sub: 'user-409', email: 'duplicado@test.com', exp: FAR_FUTURE },
+      TEST_JWT_SECRET,
+    );
+
+    // biz-04 (techfix-hogar) — pristine for this user
+    const first = await postReview('techfix-hogar', { rating: 5 }, `Bearer ${token}`);
+    expect(first.status).toBe(201);
+
+    const second = await postReview('techfix-hogar', { rating: 3 }, `Bearer ${token}`);
+    expect(second.status).toBe(409);
+
+    const body = await second.json() as { error: string };
+    expect(body.error).toBe('Ya dejaste una reseña para este negocio.');
+  });
+});
+

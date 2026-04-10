@@ -3,6 +3,7 @@ export interface D1PreparedStatementLike {
   bind(...values: Array<string | number | null>): D1PreparedStatementLike;
   first<T = unknown>(): Promise<T | null>;
   all<T = unknown>(): Promise<{ results: T[] }>;
+  run(): Promise<{ success: boolean; meta?: unknown }>;
 }
 
 export interface D1DatabaseLike {
@@ -50,4 +51,5 @@ export interface Review {
 export interface Env {
   DB: D1DatabaseLike;
   ENVIRONMENT: string;
+  SUPABASE_JWT_SECRET: string;
 }

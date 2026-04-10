@@ -94,3 +94,55 @@ export async function getReviews(
   if (!res.ok) throw new Error(`Failed to fetch reviews: ${res.status}`);
   return (await res.json()) as ReviewListResponse;
 }
+
+export interface SubmitReviewPayload {
+  rating: number;
+  comment?: string;
+}
+
+export interface SubmitReviewResponse {
+  success: boolean;
+  data: ReviewItem;
+  business: {
+    avg_rating: number;
+    review_count: number;
+  };
+}
+
+export class ReviewApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ReviewApiError';
+  }
+}
+
+export async function submitReview(
+  slug: string,
+  payload: SubmitReviewPayload,
+  token: string,
+): Promise<SubmitReviewResponse> {
+  const res = await fetch(`${API_URL}/businesses/${encodeURIComponent(slug)}/reviews`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    let message = 'Error al enviar la reseña';
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body.error) message = body.error;
+    } catch {
+      // ignore parse error, use default message
+    }
+    throw new ReviewApiError(res.status, message);
+  }
+
+  return (await res.json()) as SubmitReviewResponse;
+}
