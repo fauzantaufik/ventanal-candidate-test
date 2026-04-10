@@ -21,6 +21,13 @@ pnpm --filter worker db:seed                       # Seed sample data
 - DB binding: `DB` (D1 SQLite), configured in `wrangler.toml`
 - Migrations: `migrations/0001_businesses.sql` (schema + seed), `0002_reviews.sql` (reviews table)
 
+## Local D1 notes
+
+- In local dev, the Worker's D1 database is stored as a SQLite file under `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite`
+- Run `pnpm --filter worker db:migrate` before trying to inspect the DB so the file exists locally
+- MCP inspection examples are provided through the repo-level `.vscode/mcp.example.json` and `.mcp.example.json` files using `@bytebase/dbhub`; real local MCP files are gitignored because their paths are machine-specific
+- The exact SQLite filename/hash can change when the DB is recreated, so update the MCP path if a stale path stops working
+
 ## API endpoints
 
 | Method | Path | Description |

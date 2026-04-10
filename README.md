@@ -11,6 +11,7 @@ This is the test repository for the agentic full-stack developer position at our
 After we created your branch we pushed a few late updates to `main` that refined the briefing documents (clearer requirements, expanded video checklist, more detail on the feature scope and PR template). We've now merged those into your branch so you're working from the most up-to-date version.
 
 **What changed (docs only — no code):**
+
 - `TEST_GUIDE.md` — expanded requirements, clearer hard vs bonus items, updated video checklist
 - `FEATURE_REQUEST.md` — added app summary and design guidance
 - `.github/pull_request_template.md` — added sections for MCP, AI review, cloud env, design inspiration
@@ -78,14 +79,14 @@ pnpm test
 
 ## API endpoints (already working)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| GET | `/categories` | List all categories |
-| GET | `/businesses` | List businesses (supports `?city=`, `?category=`, `?page=`) |
-| GET | `/businesses/:slug` | Get a single business by slug |
-| POST | `/businesses/:slug/reviews` | **TO IMPLEMENT** |
-| GET | `/businesses/:slug/reviews` | **TO IMPLEMENT** |
+| Method | Path                        | Description                                                 |
+| ------ | --------------------------- | ----------------------------------------------------------- |
+| GET    | `/health`                   | Health check                                                |
+| GET    | `/categories`               | List all categories                                         |
+| GET    | `/businesses`               | List businesses (supports `?city=`, `?category=`, `?page=`) |
+| GET    | `/businesses/:slug`         | Get a single business by slug                               |
+| POST   | `/businesses/:slug/reviews` | **TO IMPLEMENT**                                            |
+| GET    | `/businesses/:slug/reviews` | **TO IMPLEMENT**                                            |
 
 ---
 
@@ -97,6 +98,45 @@ The D1 database has two migrations:
 - `0002_reviews.sql` — `reviews` table schema (exists, no endpoints yet)
 
 Run locally with: `pnpm --filter worker db:migrate`
+
+### Local D1 + MCP inspector
+
+For local development, Cloudflare D1 is backed by a local SQLite file created by Wrangler under:
+
+- `worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite`
+
+This means you can inspect the database locally without needing a remote Cloudflare D1 instance.
+
+This repo provides example MCP client configs for a SQLite/D1 inspector using `@bytebase/dbhub`:
+
+- `.vscode/mcp.example.json` — example for VS Code / Copilot Chat
+- `.mcp.example.json` — example for Claude Code CLI
+
+Local machine-specific files such as `.vscode/mcp.json` and `.mcp.json` are intentionally gitignored because the command and SQLite path vary by OS and local environment.
+
+To set it up locally:
+
+1. copy the example file to the real MCP config path you use
+2. update the command/path for your OS
+3. point the DSN at the actual Wrangler-created `.sqlite` file (not `metadata.sqlite`)
+
+Typical MCP uses during the candidate workflow:
+
+- list the existing tables (`categories`, `businesses`, `reviews`)
+- inspect schema/columns and indexes
+- run simple read-only queries such as `SELECT COUNT(*) FROM businesses`
+
+#### Cross-platform notes
+
+- **Windows:** use `npx.cmd` and a DSN like `sqlite:///D:/path/to/db.sqlite`
+- **macOS/Linux:** use `npx` and a Unix-style DSN like `sqlite:////absolute/path/to/db.sqlite`
+- the SQLite filename/hash under `.wrangler/state/...` may change when the local DB is recreated; update the MCP config path if needed
+
+#### Troubleshooting
+
+- run `pnpm --filter worker db:migrate` before starting the MCP server so the local SQLite file exists
+- if the MCP server fails on first launch because of `better-sqlite3` native bindings, rerun it once from the terminal and then reload the editor
+- if the error says the database path does not exist, verify the DSN points to the actual `.sqlite` file and not `metadata.sqlite`
 
 ---
 

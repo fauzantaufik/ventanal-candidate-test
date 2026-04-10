@@ -3,3 +3,7 @@ node_modules/
 .wrangler/
 dist/
 .DS_Store
+
+# Local MCP config is machine/OS specific
+.mcp.json
+.vscode/mcp.json

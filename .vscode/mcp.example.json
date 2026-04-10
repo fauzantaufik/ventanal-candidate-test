@@ -1,0 +1,17 @@
+{
+  "_comment": "Example for VS Code / Copilot Chat. On Windows, use 'npx.cmd' and a path like sqlite:///D:/path/to/db.sqlite. On macOS/Linux, use 'npx' and a path like sqlite:////absolute/path/to/db.sqlite.",
+  "servers": {
+    "d1-sqlite-inspector": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bytebase/dbhub@latest",
+        "--transport",
+        "stdio",
+        "--dsn",
+        "sqlite:////absolute/path/to/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/<hash>.sqlite"
+      ]
+    }
+  }
+}
