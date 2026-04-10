@@ -24,6 +24,20 @@ function timeAgo(dateStr: string): string {
   return 'ahora mismo';
 }
 
+function formatReviewDate(dateStr: string): string {
+  const date = new Date(dateStr);
+
+  if (Number.isNaN(date.getTime())) {
+    return dateStr;
+  }
+
+  return new Intl.DateTimeFormat('es-VE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}
+
 function StarRating({ rating }: { rating: number }) {
   const filled = Math.max(0, Math.min(5, Math.round(rating)));
   return (
@@ -37,9 +51,12 @@ function StarRating({ rating }: { rating: number }) {
 function ReviewCard({ review }: { review: ReviewItem }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <StarRating rating={review.rating} />
-        <span className="text-xs text-gray-400">{timeAgo(review.created_at)}</span>
+        <div className="text-right">
+          <p className="text-xs text-gray-500 font-medium">{timeAgo(review.created_at)}</p>
+          <p className="text-[11px] text-gray-400">{formatReviewDate(review.created_at)}</p>
+        </div>
       </div>
       {review.comment && (
         <p className="text-sm text-gray-700 mb-2 leading-relaxed">

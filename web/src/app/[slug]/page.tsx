@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getBusiness } from '@/lib/api';
 import { notFound } from 'next/navigation';
+import ReviewForm from '@/components/review-form';
 import ReviewList from '@/components/review-list';
 
 interface PageProps {
@@ -92,10 +93,17 @@ export default async function BusinessPage({ params }: PageProps) {
       </div>
 
       {/* Reviews section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <section id="reviews" className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Reseñas</h2>
-        <ReviewList businessSlug={slug} />
-      </div>
+
+        <div className="mb-6">
+          <ReviewForm businessSlug={slug} />
+        </div>
+
+        <div className="pt-6 border-t border-gray-100">
+          <ReviewList businessSlug={slug} />
+        </div>
+      </section>
     </div>
   );
 }
