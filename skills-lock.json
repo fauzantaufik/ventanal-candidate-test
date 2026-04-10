@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "reflection": {
+      "source": "davidkiss/smart-ai-skills",
+      "sourceType": "github",
+      "computedHash": "e184fba396a2165012ef97f6b75ac6c36215978fc2801edb50801dc2c04c113a"
+    }
+  }
+}
