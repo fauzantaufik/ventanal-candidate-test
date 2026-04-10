@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "critique": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "1433eb99b28bb38e6ee90171e73012955901331cde050ccd9bb70e73a74bf273"
+    },
     "hono": {
       "source": "yusukebe/hono-skill",
       "sourceType": "github",
