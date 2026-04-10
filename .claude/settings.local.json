@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Bash(mv D:/Project/ventanal-candidate-test/FEATURE_REQUEST.md D:/Project/ventanal-candidate-test/docs/FEATURE_REQUEST.md)",
+      "Bash(mv D:/Project/ventanal-candidate-test/PRODUCT_BRIEF.md D:/Project/ventanal-candidate-test/docs/PRODUCT_BRIEF.md)",
+      "Bash(gh repo:*)",
+      "Bash(git:*)",
+      "mcp__d1-sqlite-inspector__search_objects",
+      "mcp__d1-sqlite-inspector__execute_sql"
+    ],
+    "defaultMode": "auto",
+    "env": {
+      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "d1-sqlite-inspector"
+  ]
+}
