@@ -11,7 +11,7 @@
    Sees Review Form Area
         |
         v
- "Inicia sesión para 
+ "Inicia sesión para
   dejar tu reseña" CTA
         |
         v
@@ -22,6 +22,7 @@
 ```
 
 ## INVEST Validation
+
 - **I**ndependent: ✅ Can be built without review submission logic
 - **N**egotiable: ✅ CTA text and styling can be refined
 - **V**aluable: ✅ Clear user guidance improves conversion
@@ -30,17 +31,21 @@
 - **T**estable: ✅ Element visibility based on auth state
 
 ## Acceptance Criteria
-- [ ] Anonymous users see "Inicia sesión para dejar tu reseña" instead of review form
-- [ ] CTA links to /auth/login with return URL parameter
-- [ ] Message styling matches overall design system
-- [ ] CTA is prominent but not intrusive to review reading experience
+
+- [x] Anonymous users see "Inicia sesión para dejar tu reseña" instead of review form
+- [x] CTA links to /auth/login with return URL parameter
+- [x] Message styling matches overall design system
+- [x] CTA is prominent but not intrusive to review reading experience
 
 ## Related Functional Requirements
+
 - FR-08: The system shall show a login CTA to anonymous users when they attempt to interact with review submission form
 
 ## Related Non-Functional Requirements
+
 - NFR-07: All UI text must be in Spanish to match the target Venezuelan market
 - NFR-08: Components must use shadcn/ui library for consistent design system integration
 
 ## Design
+
 - [US-02 Design](../design/US-02.md) — Implementation-ready low-level design for this story
