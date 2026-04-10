@@ -40,7 +40,7 @@ export default function HeaderNav() {
       <LanguageSwitcher />
 
       {loading ? (
-        <div className="h-8 w-20 animate-pulse rounded bg-stone-200" />
+        <div className="h-8 w-20 animate-pulse rounded bg-orange-100" />
       ) : user ? (
         <>
           <span className="text-sm text-stone-600 truncate max-w-[140px]">

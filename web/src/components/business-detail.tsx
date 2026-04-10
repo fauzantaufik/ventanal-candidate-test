@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
+import { StarIcon, StarOutlineIcon, MapPinIcon } from '@/components/icons';
 import ReviewForm from '@/components/review-form';
 import ReviewList from '@/components/review-list';
 
@@ -51,7 +52,10 @@ export default function BusinessDetail({ business, slug }: BusinessDetailProps) 
             </span>
             <h1 className="text-2xl font-bold text-stone-900 mt-1">{business.name}</h1>
           </div>
-          <span className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color}`}>
+          <span
+            title={business.verified === 2 ? t('badge.premium.tooltip') : business.verified === 1 ? t('badge.verified.tooltip') : undefined}
+            className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color} ${business.verified > 0 ? 'cursor-help' : ''}`}
+          >
             {badge.label}
           </span>
         </div>
@@ -59,15 +63,21 @@ export default function BusinessDetail({ business, slug }: BusinessDetailProps) 
         <p className="text-stone-700 mb-4">{business.description}</p>
 
         <div className="flex items-center gap-4 text-sm text-stone-500">
-          <span>📍 {business.city}</span>
+          <span className="inline-flex items-center gap-1">
+            <MapPinIcon className="h-4 w-4 text-[var(--color-primary)]" /> {business.city}
+          </span>
           {business.address && <span>{business.address}</span>}
         </div>
 
         {/* Rating summary */}
         {business.review_count > 0 && (
           <div className="flex items-center gap-2 mt-4 pt-4 border-t border-stone-100">
-            <span className="text-amber-500 font-semibold">
-              {'★'.repeat(Math.round(business.avg_rating))}{'☆'.repeat(5 - Math.round(business.avg_rating))}
+            <span className="flex items-center gap-0.5 text-amber-500">
+              {Array.from({ length: 5 }).map((_, i) =>
+                i < Math.round(business.avg_rating)
+                  ? <StarIcon key={i} className="h-5 w-5" />
+                  : <StarOutlineIcon key={i} className="h-5 w-5" />
+              )}
             </span>
             <span className="text-sm text-stone-500">
               {business.avg_rating.toFixed(1)} ({business.review_count} {t('detail.reviews')})

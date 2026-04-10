@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/lib/i18n';
+import { StarIcon, MapPinIcon, CheckIcon, SparklesIcon } from '@/components/icons';
 import type { Business } from '@/lib/api';
 
 interface BusinessCardProps {
@@ -28,13 +29,19 @@ export default function BusinessCard({ business }: BusinessCardProps) {
           {business.category_icon} {business.category_name}
         </span>
         {isPremium && (
-          <span className="text-xs text-amber-700 font-medium bg-amber-100 px-2 py-0.5 rounded-full">
-            ⭐ Premium
+          <span
+            title={t('badge.premium.tooltip')}
+            className="inline-flex items-center gap-1 text-xs text-amber-700 font-medium bg-amber-100 px-2 py-0.5 rounded-full cursor-help"
+          >
+            <SparklesIcon className="h-3 w-3" /> Premium
           </span>
         )}
         {isVerified && (
-          <span className="text-xs text-green-700 font-medium bg-green-100 px-2 py-0.5 rounded-full">
-            ✓ {t('business.verified')}
+          <span
+            title={t('badge.verified.tooltip')}
+            className="inline-flex items-center gap-1 text-xs text-green-700 font-medium bg-green-100 px-2 py-0.5 rounded-full cursor-help"
+          >
+            <CheckIcon className="h-3 w-3" /> {t('business.verified')}
           </span>
         )}
       </div>
@@ -43,10 +50,12 @@ export default function BusinessCard({ business }: BusinessCardProps) {
       <p className="text-sm text-stone-600 line-clamp-2 mb-3">{business.description}</p>
 
       <div className="flex items-center justify-between text-xs text-stone-500">
-        <span>📍 {business.city}</span>
+        <span className="inline-flex items-center gap-1">
+          <MapPinIcon className="h-3.5 w-3.5 text-[var(--color-primary)]" /> {business.city}
+        </span>
         {business.review_count > 0 ? (
-          <span className="text-amber-600 font-medium">
-            ★ {business.avg_rating.toFixed(1)} ({business.review_count})
+          <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
+            <StarIcon className="h-3.5 w-3.5" /> {business.avg_rating.toFixed(1)} ({business.review_count})
           </span>
         ) : (
           <span>{t('business.noReviews')}</span>

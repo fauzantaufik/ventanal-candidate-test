@@ -18,6 +18,18 @@
   --color-verified: #15803d;       /* Green-700 */
   --color-premium: #b45309;        /* Amber-700 */
   --color-star: #f59e0b;           /* Amber-500 */
+
+  /* State colors — warmer alternatives to raw Tailwind reds/greens */
+  --color-error: #dc2626;          /* Red-600 */
+  --color-error-light: #fef2f2;    /* Red-50 */
+  --color-error-border: #fecaca;   /* Red-200 */
+  --color-success: #16a34a;        /* Green-600 */
+  --color-success-light: #f0fdf4;  /* Green-50 */
+  --color-success-border: #bbf7d0; /* Green-200 */
+  --color-warning: #ca8a04;        /* Yellow-600 */
+  --color-warning-light: #fefce8;  /* Yellow-50 */
+  --color-warning-border: #fef08a; /* Yellow-200 */
+  --color-focus: #ea580c;          /* Orange-600 — matches brand */
 }
 
 body {
@@ -26,4 +38,12 @@ body {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus indicators for interactive links — keyboard accessibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getReviews, type ReviewItem, type ReviewListResponse } from '@/lib/api';
 import { useI18n, type TranslationKey } from '@/lib/i18n';
+import { StarIcon, StarOutlineIcon } from '@/components/icons';
 
 interface ReviewListProps {
   businessSlug: string;
@@ -12,9 +13,12 @@ function StarRating({ rating }: { rating: number }) {
   const { t } = useI18n();
   const filled = Math.max(0, Math.min(5, Math.round(rating)));
   return (
-    <span className="text-yellow-500" aria-label={`${rating} ${t('reviews.starsLabel')}`}>
-      {'★'.repeat(filled)}
-      <span className="text-stone-300">{'☆'.repeat(5 - filled)}</span>
+    <span className="inline-flex items-center gap-0.5" aria-label={`${rating} ${t('reviews.starsLabel')}`}>
+      {Array.from({ length: 5 }).map((_, i) =>
+        i < filled
+          ? <StarIcon key={i} className="h-4 w-4 text-amber-500" />
+          : <StarOutlineIcon key={i} className="h-4 w-4 text-stone-300" />
+      )}
     </span>
   );
 }
@@ -77,12 +81,12 @@ function SkeletonCard() {
   return (
     <div className="bg-white rounded-xl border border-[var(--color-border)] p-4 animate-pulse">
       <div className="flex items-center justify-between mb-3">
-        <div className="h-4 w-20 bg-stone-200 rounded" />
-        <div className="h-3 w-16 bg-stone-200 rounded" />
+        <div className="h-4 w-20 bg-orange-100 rounded" />
+        <div className="h-3 w-16 bg-orange-100 rounded" />
       </div>
-      <div className="h-3 w-full bg-stone-200 rounded mb-2" />
-      <div className="h-3 w-3/4 bg-stone-200 rounded mb-3" />
-      <div className="h-3 w-24 bg-stone-200 rounded" />
+      <div className="h-3 w-full bg-orange-50 rounded mb-2" />
+      <div className="h-3 w-3/4 bg-orange-50 rounded mb-3" />
+      <div className="h-3 w-24 bg-orange-100 rounded" />
     </div>
   );
 }
@@ -145,11 +149,11 @@ export default function ReviewList({ businessSlug }: ReviewListProps) {
   // Error state
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-        <p className="text-sm text-red-700 font-medium mb-3">{error}</p>
+      <div className="rounded-lg border border-[var(--color-error-border)] bg-[var(--color-error-light)] p-4">
+        <p className="text-sm text-[var(--color-error)] font-medium mb-3">{error}</p>
         <button
           onClick={handleRetry}
-          className="text-sm font-medium text-red-700 border border-red-300 rounded-lg px-4 py-1.5 hover:bg-red-100 transition-colors"
+          className="text-sm font-medium text-[var(--color-error)] border border-[var(--color-error-border)] rounded-lg px-4 py-1.5 hover:bg-[var(--color-error-light)] transition-colors"
         >
           {t('reviews.retry')}
         </button>

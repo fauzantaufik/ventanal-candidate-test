@@ -28,6 +28,7 @@ const translations = {
     es: 'Asegúrate de que el worker esté corriendo:',
     en: 'Make sure the worker is running:',
   },
+  'home.error.retry': { es: 'Reintentar', en: 'Retry' },
   'home.empty': { es: 'No se encontraron negocios', en: 'No businesses found' },
   'home.viewAll': { es: 'Ver todos los negocios', en: 'View all businesses' },
   'home.showing': { es: 'Mostrando', en: 'Showing' },
@@ -37,6 +38,16 @@ const translations = {
   // ── Business card ───────────────────────────────────────────────────────
   'business.verified': { es: 'Verificado', en: 'Verified' },
   'business.noReviews': { es: 'Sin reseñas aún', en: 'No reviews yet' },
+
+  // ── Badge tooltips ──────────────────────────────────────────────────────
+  'badge.premium.tooltip': {
+    es: 'Negocio destacado con respuesta rápida',
+    en: 'Featured business with fast response',
+  },
+  'badge.verified.tooltip': {
+    es: 'Negocio verificado por Directorio Local',
+    en: 'Business verified by Directorio Local',
+  },
 
   // ── Business detail page ────────────────────────────────────────────────
   'detail.back': { es: '← Volver al directorio', en: '← Back to directory' },

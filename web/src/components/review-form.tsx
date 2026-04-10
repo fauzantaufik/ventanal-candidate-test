@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { submitReview, ReviewError } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
+import { StarIcon, StarOutlineIcon } from '@/components/icons';
 
 interface ReviewFormProps {
   businessSlug: string;
@@ -54,7 +55,7 @@ function StarPicker({
               active ? 'text-yellow-400' : 'text-stone-300'
             } ${disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-110'}`}
           >
-            ★
+            {active ? <StarIcon className="h-7 w-7" /> : <StarOutlineIcon className="h-7 w-7" />}
           </button>
         );
       })}
@@ -128,7 +129,7 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
   };
 
   if (formState === 'loading') {
-    return <div className="h-24 rounded-lg bg-stone-100 animate-pulse" />;
+    return <div className="h-24 rounded-lg bg-orange-50 animate-pulse" />;
   }
 
   if (formState === 'anonymous') {
@@ -159,11 +160,11 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
 
   if (formState === 'success') {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-5 text-center">
-        <p className="text-base font-semibold text-green-800 mb-1">
+      <div className="rounded-lg border border-[var(--color-success-border)] bg-[var(--color-success-light)] p-5 text-center">
+        <p className="text-base font-semibold text-[var(--color-success)] mb-1">
           {t('form.successTitle')}
         </p>
-        <p className="text-sm text-green-700">{t('form.successBody')}</p>
+        <p className="text-sm text-[var(--color-success)]">{t('form.successBody')}</p>
       </div>
     );
   }
@@ -182,9 +183,9 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
   if (formState === 'session_expired') {
     const returnTo = `/${businessSlug}#reviews`;
     return (
-      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-5 text-center">
-        <p className="text-base font-semibold text-yellow-800 mb-1">{t('form.expiredTitle')}</p>
-        <p className="text-sm text-yellow-700 mb-4">
+      <div className="rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-light)] p-5 text-center">
+        <p className="text-base font-semibold text-[var(--color-warning)] mb-1">{t('form.expiredTitle')}</p>
+        <p className="text-sm text-[var(--color-warning)] mb-4">
           {t('form.expiredBody')}
         </p>
         <Link
@@ -227,13 +228,13 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
           rows={3}
           maxLength={500}
           placeholder={t('form.placeholder')}
-          className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-stone-50 disabled:text-stone-400 resize-none"
+          className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-focus)] disabled:bg-stone-50 disabled:text-stone-400 resize-none"
         />
         <p className="text-right text-xs text-stone-400 mt-0.5">{comment.length} / 500</p>
       </div>
 
       {errorMsg && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <p className="text-sm text-[var(--color-error)] bg-[var(--color-error-light)] border border-[var(--color-error-border)] rounded-lg px-3 py-2">
           {errorMsg}
         </p>
       )}

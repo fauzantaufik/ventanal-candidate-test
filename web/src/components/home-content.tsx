@@ -57,12 +57,18 @@ export default function HomeContent({ businesses, categories, error, params }: H
 
       {/* Error state */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+        <div className="rounded-lg border border-[var(--color-error-border)] bg-[var(--color-error-light)] p-4 text-[var(--color-error)]">
           <p className="font-medium">{t('home.error.title')}</p>
           <p className="text-sm mt-1">{error}</p>
-          <p className="text-sm mt-2 text-red-600">
-            {t('home.error.hint')} <code className="bg-red-100 px-1 rounded">pnpm dev:worker</code>
+          <p className="text-sm mt-2 text-[var(--color-error)]">
+            {t('home.error.hint')} <code className="bg-[var(--color-error-light)] px-1 rounded">pnpm dev:worker</code>
           </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 text-sm font-medium text-[var(--color-error)] border border-[var(--color-error-border)] rounded-lg px-4 py-1.5 hover:bg-[var(--color-error-light)] transition-colors"
+          >
+            {t('home.error.retry')}
+          </button>
         </div>
       )}
 

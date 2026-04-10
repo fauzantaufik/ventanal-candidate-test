@@ -120,7 +120,7 @@ function LoginForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={fieldErrors.email ? 'border-red-400 bg-red-50' : ''}
+              className={fieldErrors.email ? 'border-[var(--color-error)] bg-[var(--color-error-light)]' : ''}
               placeholder={t('login.emailPlaceholder')}
             />
             {fieldErrors.email && (
@@ -136,7 +136,7 @@ function LoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={fieldErrors.password ? 'border-red-400 bg-red-50' : ''}
+              className={fieldErrors.password ? 'border-[var(--color-error)] bg-[var(--color-error-light)]' : ''}
               placeholder={t('login.passwordPlaceholder')}
             />
             {fieldErrors.password && (
@@ -170,8 +170,8 @@ export default function LoginPage() {
         fallback={
           <Card>
             <CardHeader>
-              <div className="mb-2 h-8 w-40 animate-pulse rounded bg-stone-100" />
-              <div className="h-4 w-56 animate-pulse rounded bg-stone-100" />
+              <div className="mb-2 h-8 w-40 animate-pulse rounded bg-orange-100" />
+              <div className="h-4 w-56 animate-pulse rounded bg-orange-50" />
             </CardHeader>
           </Card>
         }
