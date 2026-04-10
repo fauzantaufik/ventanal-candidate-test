@@ -7,6 +7,7 @@ interface SearchParams {
   city?: string;
   category?: string;
   page?: string;
+  search?: string;
 }
 
 export default async function HomePage({
@@ -15,6 +16,7 @@ export default async function HomePage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+  const page = params.page ? Number.parseInt(params.page, 10) : 1;
 
   let businesses;
   let categories;
@@ -25,12 +27,13 @@ export default async function HomePage({
       getBusinesses({
         city: params.city,
         category: params.category,
-        page: params.page ? parseInt(params.page) : 1,
+        search: params.search?.trim() || undefined,
+        page: Number.isFinite(page) && page > 0 ? page : 1,
       }),
       getCategories(),
     ]);
   } catch (e) {
-    error = e instanceof Error ? e.message : 'Error loading businesses';
+    error = e instanceof Error ? e.message : 'No se pudieron cargar los negocios.';
     businesses = null;
     categories = null;
   }

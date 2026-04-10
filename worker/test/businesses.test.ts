@@ -1,10 +1,6 @@
 import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import app from '../src/index.js';
-
-// This is the one example test included in the base repo.
-// It verifies that the businesses endpoint works before the candidate starts.
-// Add more tests in test/reviews.test.ts as part of your implementation.
 
 describe('GET /businesses', () => {
   it('returns a list of businesses', async () => {
@@ -17,6 +13,63 @@ describe('GET /businesses', () => {
     const body = await response.json() as { data: unknown[]; meta: { total: number } };
     expect(body.data).toBeInstanceOf(Array);
     expect(body.meta.total).toBeGreaterThan(0);
+  });
+
+  it('filters businesses by search in the business name, case-insensitively', async () => {
+    const request = new Request('http://localhost/businesses?search=YOGA');
+    const ctx = createExecutionContext();
+    const response = await app.fetch(request, env, ctx);
+    await waitOnExecutionContext(ctx);
+
+    expect(response.status).toBe(200);
+    const body = await response.json() as {
+      data: Array<{ slug: string; name: string }>;
+      meta: { total: number };
+    };
+
+    expect(body.meta.total).toBe(1);
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0]?.slug).toBe('bienestar-yoga-studio');
+    expect(body.data[0]?.name).toBe('Bienestar Yoga Studio');
+  });
+
+  it('filters businesses by search in the description, case-insensitively', async () => {
+    const request = new Request('http://localhost/businesses?search=CERTIFICADO');
+    const ctx = createExecutionContext();
+    const response = await app.fetch(request, env, ctx);
+    await waitOnExecutionContext(ctx);
+
+    expect(response.status).toBe(200);
+    const body = await response.json() as {
+      data: Array<{ slug: string; name: string }>;
+      meta: { total: number };
+    };
+
+    expect(body.meta.total).toBe(1);
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0]?.slug).toBe('techfix-hogar');
+    expect(body.data[0]?.name).toBe('TechFix Hogar');
+  });
+
+  it('combines search with category and city filters', async () => {
+    const request = new Request(
+      'http://localhost/businesses?search=INTEGRAL&category=salud-bienestar&city=Caracas'
+    );
+    const ctx = createExecutionContext();
+    const response = await app.fetch(request, env, ctx);
+    await waitOnExecutionContext(ctx);
+
+    expect(response.status).toBe(200);
+    const body = await response.json() as {
+      data: Array<{ slug: string; city: string; category_slug: string }>;
+      meta: { total: number };
+    };
+
+    expect(body.meta.total).toBe(1);
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0]?.slug).toBe('clinica-dental-sonrisa');
+    expect(body.data[0]?.city).toBe('Caracas');
+    expect(body.data[0]?.category_slug).toBe('salud-bienestar');
   });
 
   it('returns a single business by slug', async () => {

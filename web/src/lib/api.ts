@@ -18,6 +18,7 @@ export type BusinessesQuery = BusinessesRequest extends { query: infer Q }
       page?: string;
       city?: string;
       category?: string;
+      search?: string;
     };
 export type BusinessListResponse = InferResponseType<typeof businessesClient.$get, 200>;
 export type Business = BusinessListResponse['data'][number];
@@ -32,12 +33,14 @@ export async function getBusinesses(params?: {
   page?: number | BusinessesQuery['page'];
   city?: BusinessesQuery['city'];
   category?: BusinessesQuery['category'];
+  search?: BusinessesQuery['search'];
 }): Promise<BusinessListResponse> {
   const query: BusinessesQuery = {};
 
   if (params?.page) query.page = String(params.page);
   if (params?.city) query.city = params.city;
   if (params?.category) query.category = params.category;
+  if (params?.search) query.search = params.search;
 
   const res = await businessesClient.$get({ query });
   if (!res.ok) throw new Error(`Failed to fetch businesses: ${res.status}`);

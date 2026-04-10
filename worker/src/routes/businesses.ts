@@ -2,9 +2,9 @@ import { Hono } from 'hono';
 import type { Env, Business } from '../db/schema.js';
 
 const businesses = new Hono<{ Bindings: Env }>()
-  // GET /businesses — paginated list with optional city filter
+  // GET /businesses — paginated list with optional city, category, and search filters
   .get('/', async (c) => {
-    const { page = '1', limit = '20', city, category } = c.req.query();
+    const { page = '1', limit = '20', city, category, search } = c.req.query();
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     let query = `
@@ -46,6 +46,11 @@ const businesses = new Hono<{ Bindings: Env }>()
       query += ` AND cat.slug = ?`;
       params.push(category);
     }
+    if (search) {
+      query += ` AND (LOWER(b.name) LIKE LOWER(?) OR LOWER(b.description) LIKE LOWER(?))`;
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern);
+    }
 
     query += ` ORDER BY b.verified DESC, COALESCE(review_stats.avg_rating, 0) DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
@@ -60,10 +65,15 @@ const businesses = new Hono<{ Bindings: Env }>()
       WHERE 1=1
       ${city ? ' AND LOWER(b.city) = LOWER(?)' : ''}
       ${category ? ' AND cat.slug = ?' : ''}
+      ${search ? ' AND (LOWER(b.name) LIKE LOWER(?) OR LOWER(b.description) LIKE LOWER(?))' : ''}
     `;
     const countParams: string[] = [];
     if (city) countParams.push(city);
     if (category) countParams.push(category);
+    if (search) {
+      const searchPattern = `%${search}%`;
+      countParams.push(searchPattern, searchPattern);
+    }
 
     const countResult = await c.env.DB.prepare(countQuery)
       .bind(...countParams)
