@@ -7,7 +7,8 @@
       "Bash(gh repo:*)",
       "Bash(git:*)",
       "mcp__d1-sqlite-inspector__search_objects",
-      "mcp__d1-sqlite-inspector__execute_sql"
+      "mcp__d1-sqlite-inspector__execute_sql",
+      "Bash(pnpm --filter web build)"
     ],
     "defaultMode": "auto",
     "env": {

@@ -28,17 +28,21 @@ When building or updating a feature:
    - `mobile` for `mobile/**`
 2. **Then use the `builder-workflow` skill** so the work is anchored on the relevant story/design docs, stays inside the correct workspace boundary, and is verified with real checks.
 3. **Commit at meaningful milestones per subtask** (API, UI, tests, docs), rather than waiting for one large end-of-story commit.
+4. **For new cross-app UI features** (like i18n, auth UX, or shared state), verify both the server/client component boundary and the React version typing constraints before broad refactors.
 
 For cross-workspace changes, keep the owning agent explicit and hand off through the shared Hono RPC contract instead of blurring boundaries.
 
 ## Conventions
 
+- For PR review or AI review tasks, always treat the active PR / merge change set as the source of truth; do not default to `git diff main` unless the user explicitly asks for a local diff-based review.
+- When working in Next.js App Router, do not introduce hooks, browser APIs, or context into a server component. First decide whether the feature belongs in a client wrapper or a server component, then implement from that boundary.
+- When a change materially affects architecture, service behavior, or app logic in `web/`, `worker/`, or `mobile/`, update the closest owning doc in the same task. Keep docs non-duplicative to reduce token cost and avoid multiple sources of truth; for implementation details, the code is the source of truth.
+
 When writing CLAUDE.md files:
 
-- Explain _why_ a folder or structure exists, not just what's in it
 - Folders with a specific purpose (e.g. brain project, workspace) get their own CLAUDE.md
 - Prefer folder-level references over exhaustive file listings
-- Keep stable docs non-overlapping: `PRODUCT_BRIEF.md` for product context, `architecture.md` for system design, and ADRs for durable architectural decisions
+- Keep stable docs non-overlapping: `PRODUCT_BRIEF.md` for product context, `architecture.md` for system design, and ADRs for durable architectural decisions, etc
 - Temporary implementation notes belong under `docs/design/`, not source of truth, and should be archived for later human cleanup after stories implementation finish. The source of truth is the living code implemented.
 
 ## Top-level commands

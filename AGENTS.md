@@ -115,7 +115,7 @@ Claude-specific agent files live under `.claude/agents/`.
 
 **Role**
 
-- Owns adversarial review before a PR by checking the actual diff against story acceptance criteria, CI expectations, security, and workspace boundaries.
+- Owns adversarial review for an active PR or merge-ready change set by checking the actual PR changes against story acceptance criteria, CI expectations, security, and workspace boundaries.
 
 **Does**
 
@@ -132,7 +132,7 @@ Claude-specific agent files live under `.claude/agents/`.
 **Key constraints / context**
 
 - Use this agent when preparing or checking a PR
-- It should focus on the actual diff and the relevant story under `docs/stories/`
+- It should focus on the actual PR / merge changes and the relevant story under `docs/stories/`
 - It is a read-only QA pass, not an implementation agent
 
 ## Boundary rule
