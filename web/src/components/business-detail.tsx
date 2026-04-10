@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { StarIcon, StarOutlineIcon, MapPinIcon } from '@/components/icons';
@@ -28,6 +29,7 @@ interface BusinessDetailProps {
 
 export default function BusinessDetail({ business, slug }: BusinessDetailProps) {
   const { t } = useI18n();
+  const [reviewRefreshNonce, setReviewRefreshNonce] = useState(0);
 
   const verifiedLabels: Record<number, { label: string; color: string }> = {
     0: { label: t('detail.unverified'), color: 'bg-stone-100 text-stone-500' },
@@ -113,11 +115,14 @@ export default function BusinessDetail({ business, slug }: BusinessDetailProps) 
         <h2 className="text-lg font-semibold text-stone-900 mb-4">{t('detail.reviewsTitle')}</h2>
 
         <div className="mb-6">
-          <ReviewForm businessSlug={slug} />
+          <ReviewForm
+            businessSlug={slug}
+            onReviewSubmitted={() => setReviewRefreshNonce((current) => current + 1)}
+          />
         </div>
 
         <div className="pt-6 border-t border-stone-100">
-          <ReviewList businessSlug={slug} />
+          <ReviewList key={reviewRefreshNonce} businessSlug={slug} />
         </div>
       </section>
     </div>

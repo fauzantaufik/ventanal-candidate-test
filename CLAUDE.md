@@ -37,6 +37,9 @@ For cross-workspace changes, keep the owning agent explicit and hand off through
 - For PR review or AI review tasks, always treat the active PR / merge change set as the source of truth; do not default to `git diff main` unless the user explicitly asks for a local diff-based review.
 - When working in Next.js App Router, do not introduce hooks, browser APIs, or context into a server component. First decide whether the feature belongs in a client wrapper or a server component, then implement from that boundary.
 - When a change materially affects architecture, service behavior, or app logic in `web/`, `worker/`, or `mobile/`, update the closest owning doc in the same task. Keep docs non-duplicative to reduce token cost and avoid multiple sources of truth; for implementation details, the code is the source of truth.
+- For browser-fetched worker APIs in local dev, always verify CORS against the actual web origin and port in use (for example `localhost:3000`, `localhost:3001`) before assuming the frontend review flow is broken.
+- When Supabase Auth is used in `web/` and the worker validates JWTs, prefer verifying real access tokens against Supabase JWKS (with a local test fallback) rather than relying only on a shared dev secret.
+- When an endpoint exposes aggregate fields like `review_count` or `avg_rating`, verify they are derived from the same source of truth as the detailed list data to avoid header/list mismatches.
 
 When writing CLAUDE.md files:
 

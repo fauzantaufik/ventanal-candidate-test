@@ -1,6 +1,8 @@
 import { getBusinesses, getCategories } from '@/lib/api';
 import HomeContent from '@/components/home-content';
 
+export const dynamic = 'force-dynamic';
+
 interface SearchParams {
   city?: string;
   category?: string;

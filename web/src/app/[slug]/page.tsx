@@ -2,6 +2,8 @@ import { getBusiness } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import BusinessDetail from '@/components/business-detail';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
