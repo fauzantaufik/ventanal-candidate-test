@@ -35,13 +35,13 @@ Empty State  Display List
 
 ## Acceptance Criteria
 
-- [ ] Anonymous users can view all reviews for any business without authentication
-- [ ] Reviews display star rating, comment text, reviewer name, and relative date
-- [ ] Reviews are ordered newest first
-- [ ] Empty state message appears when no reviews exist
-- [ ] Loading skeleton shows while fetching review data
-- [ ] Error state with retry button appears on API failure
-- [ ] Star ratings display using ★ (filled) and ☆ (empty) symbols
+- [x] Anonymous users can view all reviews for any business without authentication
+- [x] Reviews display star rating, comment text, reviewer name, and relative date
+- [x] Reviews are ordered newest first
+- [x] Empty state message appears when no reviews exist
+- [x] Loading skeleton shows while fetching review data
+- [x] Error state with retry button appears on API failure
+- [x] Star ratings display using ★ (filled) and ☆ (empty) symbols
 
 ## Related Functional Requirements
 
