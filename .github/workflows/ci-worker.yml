@@ -2,7 +2,9 @@ name: CI — Worker
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'candidate/**'
     paths:
       - 'worker/**'
       - 'pnpm-workspace.yaml'

@@ -2,7 +2,9 @@ name: CI — Web
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'candidate/**'
     paths:
       - 'web/**'
       - 'pnpm-workspace.yaml'
