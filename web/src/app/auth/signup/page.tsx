@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
+import { useI18n } from '@/lib/i18n';
 
 interface FieldErrors {
   fullName?: string;
@@ -31,6 +32,7 @@ function getSafeReturnTo(returnTo: string | null): string {
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const destination = getSafeReturnTo(searchParams.get('returnTo'));
 
   const [fullName, setFullName] = useState('');
@@ -47,18 +49,18 @@ function SignupForm() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (trimmedName.length < 2) {
-      errors.fullName = 'El nombre debe tener al menos 2 caracteres.';
+      errors.fullName = t('signup.fullNameError');
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(normalizedEmail)) {
-      errors.email = 'Ingresa un correo válido.';
+      errors.email = t('signup.emailError');
     }
 
     if (password.length < 8) {
-      errors.password = 'La contraseña debe tener al menos 8 caracteres.';
+      errors.password = t('signup.passwordMinError');
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      errors.password = 'Usa mayúsculas, minúsculas y al menos un número.';
+      errors.password = t('signup.passwordFormatError');
     }
 
     setFieldErrors(errors);
@@ -97,15 +99,15 @@ function SignupForm() {
         message.includes('already exists') ||
         message.includes('user already')
       ) {
-        setFormError('Ya existe una cuenta con ese correo. Inicia sesión.');
+        setFormError(t('signup.error.exists'));
       } else if (message.includes('rate limit')) {
-        setFormError('Has intentado demasiadas veces. Espera un momento antes de volver a intentarlo.');
+        setFormError(t('signup.error.rateLimit'));
       } else if (message.includes('invalid') && message.includes('email')) {
-        setFormError('Ingresa un correo válido.');
+        setFormError(t('signup.error.invalidEmail'));
       } else if (message.includes('password')) {
-        setFormError('La contraseña no cumple los requisitos de seguridad.');
+        setFormError(t('signup.error.password'));
       } else {
-        setFormError('No se pudo crear la cuenta. Inténtalo de nuevo.');
+        setFormError(t('signup.error.generic'));
       }
       return;
     }
@@ -134,9 +136,7 @@ function SignupForm() {
       signInError &&
       !signInError.message.toLowerCase().includes('email not confirmed')
     ) {
-      setFormError(
-        'La cuenta fue creada, pero no se pudo iniciar sesión automáticamente. Intenta iniciar sesión manualmente.'
-      );
+      setFormError(t('signup.error.autoLogin'));
       return;
     }
 
@@ -147,20 +147,20 @@ function SignupForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Revisa tu correo</CardTitle>
+          <CardTitle>{t('signup.confirmTitle')}</CardTitle>
           <CardDescription>
-            Te enviamos un enlace para confirmar tu cuenta antes de continuar.
+            {t('signup.confirmBody')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Después de confirmar tu correo, volverás a la página desde la que empezaste.
+          <p className="text-sm text-stone-600">
+            {t('signup.confirmHint')}
           </p>
           <Link
             href={`/auth/login?returnTo=${encodeURIComponent(destination)}`}
-            className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            className="inline-flex w-full items-center justify-center rounded-lg border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
           >
-            Ir a iniciar sesión
+            {t('signup.goToLogin')}
           </Link>
         </CardContent>
       </Card>
@@ -170,9 +170,9 @@ function SignupForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Crear cuenta</CardTitle>
+        <CardTitle>{t('signup.title')}</CardTitle>
         <CardDescription>
-          Únete para dejar reseñas en negocios locales.
+          {t('signup.subtitle')}
         </CardDescription>
       </CardHeader>
 
@@ -181,7 +181,7 @@ function SignupForm() {
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
-            <Label htmlFor="fullName">Nombre completo</Label>
+            <Label htmlFor="fullName">{t('signup.fullName')}</Label>
             <Input
               id="fullName"
               type="text"
@@ -189,7 +189,7 @@ function SignupForm() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className={fieldErrors.fullName ? 'border-red-400 bg-red-50' : ''}
-              placeholder="Tu nombre"
+              placeholder={t('signup.fullNamePlaceholder')}
             />
             {fieldErrors.fullName && (
               <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
@@ -197,7 +197,7 @@ function SignupForm() {
           </div>
 
           <div>
-            <Label htmlFor="email">Correo electrónico</Label>
+            <Label htmlFor="email">{t('signup.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -205,7 +205,7 @@ function SignupForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={fieldErrors.email ? 'border-red-400 bg-red-50' : ''}
-              placeholder="tu@correo.com"
+              placeholder={t('signup.emailPlaceholder')}
             />
             {fieldErrors.email && (
               <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
@@ -213,7 +213,7 @@ function SignupForm() {
           </div>
 
           <div>
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{t('signup.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -221,29 +221,29 @@ function SignupForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={fieldErrors.password ? 'border-red-400 bg-red-50' : ''}
-              placeholder="Mínimo 8 caracteres, con mayúsculas y números"
+              placeholder={t('signup.passwordPlaceholder')}
             />
             {fieldErrors.password ? (
               <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
             ) : (
-              <p className="mt-1 text-xs text-gray-500">
-                Usa al menos 8 caracteres, con mayúsculas, minúsculas y un número.
+              <p className="mt-1 text-xs text-stone-500">
+                {t('signup.passwordHint')}
               </p>
             )}
           </div>
 
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+            {loading ? t('signup.loading') : t('signup.button')}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          ¿Ya tienes cuenta?{' '}
+        <p className="mt-6 text-center text-sm text-stone-600">
+          {t('signup.hasAccount')}{' '}
           <Link
             href={`/auth/login?returnTo=${encodeURIComponent(destination)}`}
-            className="font-medium text-blue-600 hover:underline"
+            className="font-medium text-[var(--color-primary)] hover:underline"
           >
-            Inicia sesión
+            {t('signup.loginLink')}
           </Link>
         </p>
       </CardContent>
@@ -258,8 +258,8 @@ export default function SignupPage() {
         fallback={
           <Card>
             <CardHeader>
-              <div className="mb-2 h-8 w-40 animate-pulse rounded bg-gray-100" />
-              <div className="h-4 w-56 animate-pulse rounded bg-gray-100" />
+              <div className="mb-2 h-8 w-40 animate-pulse rounded bg-stone-100" />
+              <div className="h-4 w-56 animate-pulse rounded bg-stone-100" />
             </CardHeader>
           </Card>
         }

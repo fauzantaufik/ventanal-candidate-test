@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
+import { useI18n } from '@/lib/i18n';
 
 interface LoginErrors {
   email?: string;
@@ -30,6 +31,7 @@ function getSafeReturnTo(returnTo: string | null): string {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const destination = getSafeReturnTo(searchParams.get('returnTo'));
 
   const [email, setEmail] = useState('');
@@ -44,11 +46,11 @@ function LoginForm() {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(normalizedEmail)) {
-      errors.email = 'Ingresa un correo válido.';
+      errors.email = t('login.emailError');
     }
 
     if (!password) {
-      errors.password = 'Ingresa tu contraseña.';
+      errors.password = t('login.passwordError');
     }
 
     setFieldErrors(errors);
@@ -80,15 +82,13 @@ function LoginForm() {
         message.includes('wrong password') ||
         message.includes('user not found')
       ) {
-        setFormError('Correo o contraseña incorrectos.');
+        setFormError(t('login.error.credentials'));
       } else if (message.includes('rate limit')) {
-        setFormError(
-          'Has intentado demasiadas veces. Espera un momento antes de volver a intentarlo.'
-        );
+        setFormError(t('login.error.rateLimit'));
       } else if (message.includes('email not confirmed')) {
-        setFormError('Confirma tu correo antes de iniciar sesión.');
+        setFormError(t('login.error.emailNotConfirmed'));
       } else {
-        setFormError('No se pudo iniciar sesión. Inténtalo de nuevo.');
+        setFormError(t('login.error.generic'));
       }
       return;
     }
@@ -102,9 +102,9 @@ function LoginForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Iniciar sesión</CardTitle>
+        <CardTitle>{t('login.title')}</CardTitle>
         <CardDescription>
-          Entra para continuar y dejar tus reseñas.
+          {t('login.subtitle')}
         </CardDescription>
       </CardHeader>
 
@@ -113,7 +113,7 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
-            <Label htmlFor="email">Correo electrónico</Label>
+            <Label htmlFor="email">{t('login.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -121,7 +121,7 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={fieldErrors.email ? 'border-red-400 bg-red-50' : ''}
-              placeholder="tu@correo.com"
+              placeholder={t('login.emailPlaceholder')}
             />
             {fieldErrors.email && (
               <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
@@ -129,7 +129,7 @@ function LoginForm() {
           </div>
 
           <div>
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{t('login.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -137,7 +137,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={fieldErrors.password ? 'border-red-400 bg-red-50' : ''}
-              placeholder="Tu contraseña"
+              placeholder={t('login.passwordPlaceholder')}
             />
             {fieldErrors.password && (
               <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
@@ -145,17 +145,17 @@ function LoginForm() {
           </div>
 
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? 'Entrando...' : 'Iniciar sesión'}
+            {loading ? t('login.loading') : t('login.button')}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          ¿No tienes cuenta?{' '}
+        <p className="mt-6 text-center text-sm text-stone-600">
+          {t('login.noAccount')}{' '}
           <Link
             href={`/auth/signup?returnTo=${encodeURIComponent(destination)}`}
-            className="font-medium text-blue-600 hover:underline"
+            className="font-medium text-[var(--color-primary)] hover:underline"
           >
-            Crear cuenta
+            {t('login.createAccount')}
           </Link>
         </p>
       </CardContent>
@@ -170,8 +170,8 @@ export default function LoginPage() {
         fallback={
           <Card>
             <CardHeader>
-              <div className="mb-2 h-8 w-40 animate-pulse rounded bg-gray-100" />
-              <div className="h-4 w-56 animate-pulse rounded bg-gray-100" />
+              <div className="mb-2 h-8 w-40 animate-pulse rounded bg-stone-100" />
+              <div className="h-4 w-56 animate-pulse rounded bg-stone-100" />
             </CardHeader>
           </Card>
         }

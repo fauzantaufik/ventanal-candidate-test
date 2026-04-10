@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Providers from '@/components/providers';
+import HeaderNav from '@/components/header-nav';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -14,30 +16,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <Link href="/" className="text-lg font-bold text-gray-900">
-              Directorio Local
-            </Link>
-            <nav className="flex items-center gap-4">
-              {/* TODO: Add auth nav links here (login/signup/user menu) */}
-              <Link
-                href="/auth/login"
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Iniciar sesión
+      <body className="min-h-screen bg-[var(--color-surface)]">
+        <Providers>
+          <header className="bg-white border-b border-[var(--color-border)] px-4 py-3">
+            <div className="max-w-5xl mx-auto flex items-center justify-between">
+              <Link href="/" className="text-lg font-bold text-[var(--color-primary)]">
+                Directorio Local
               </Link>
-              <Link
-                href="/auth/signup"
-                className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
-              >
-                Registrarse
-              </Link>
-            </nav>
-          </div>
-        </header>
-        <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+              <HeaderNav />
+            </div>
+          </header>
+          <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+        </Providers>
       </body>
     </html>
   );

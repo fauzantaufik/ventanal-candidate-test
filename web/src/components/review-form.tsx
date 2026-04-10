@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { submitReview, ReviewError } from '@/lib/api';
+import { useI18n } from '@/lib/i18n';
 
 interface ReviewFormProps {
   businessSlug: string;
@@ -35,8 +36,9 @@ function StarPicker({
   onSelect: (n: number) => void;
   disabled: boolean;
 }) {
+  const { t } = useI18n();
   return (
-    <div className="flex gap-1" role="group" aria-label="Calificación">
+    <div className="flex gap-1" role="group" aria-label={t('form.rating')}>
       {[1, 2, 3, 4, 5].map((n) => {
         const active = n <= (hover || value);
         return (
@@ -44,12 +46,12 @@ function StarPicker({
             key={n}
             type="button"
             disabled={disabled}
-            aria-label={`${n} estrella${n !== 1 ? 's' : ''}`}
+            aria-label={`${n} ${n !== 1 ? t('form.starsLabel') : t('form.starLabel')}`}
             onMouseEnter={() => onHover(n)}
             onMouseLeave={onLeave}
             onClick={() => onSelect(n)}
             className={`text-2xl transition-transform ${
-              active ? 'text-yellow-400' : 'text-gray-300'
+              active ? 'text-yellow-400' : 'text-stone-300'
             } ${disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-110'}`}
           >
             ★
@@ -62,6 +64,7 @@ function StarPicker({
 
 export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFormProps) {
   const router = useRouter();
+  const { t } = useI18n();
   const [formState, setFormState] = useState<FormState>('loading');
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -118,36 +121,36 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
           setFormState('idle');
         }
       } else {
-        setErrorMsg('No se pudo guardar la reseña. Inténtalo de nuevo.');
+        setErrorMsg(t('form.errorGeneric'));
         setFormState('idle');
       }
     }
   };
 
   if (formState === 'loading') {
-    return <div className="h-24 rounded-lg bg-gray-100 animate-pulse" />;
+    return <div className="h-24 rounded-lg bg-stone-100 animate-pulse" />;
   }
 
   if (formState === 'anonymous') {
     const returnTo = `/${businessSlug}#reviews`;
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-5 text-center">
-        <p className="text-base font-semibold text-gray-900 mb-1">¿Quieres dejar tu reseña?</p>
-        <p className="text-sm text-gray-600 mb-4">
-          Inicia sesión para compartir tu experiencia y ayudar a otros clientes a decidir con confianza.
+      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-primary-light)] p-5 text-center">
+        <p className="text-base font-semibold text-stone-900 mb-1">{t('form.anonTitle')}</p>
+        <p className="text-sm text-stone-600 mb-4">
+          {t('form.anonBody')}
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <Link
             href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
-            className="inline-block bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-block bg-[var(--color-primary)] text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
           >
-            Iniciar sesión
+            {t('form.anonLogin')}
           </Link>
           <Link
             href={`/auth/signup?returnTo=${encodeURIComponent(returnTo)}`}
-            className="inline-block border border-gray-300 text-gray-700 text-sm font-medium px-5 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-block border border-[var(--color-border)] text-stone-700 text-sm font-medium px-5 py-2 rounded-lg hover:bg-stone-50 transition-colors"
           >
-            Crear cuenta
+            {t('form.anonSignup')}
           </Link>
         </div>
       </div>
@@ -158,20 +161,20 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 p-5 text-center">
         <p className="text-base font-semibold text-green-800 mb-1">
-          ¡Gracias por compartir tu experiencia!
+          {t('form.successTitle')}
         </p>
-        <p className="text-sm text-green-700">Tu reseña ha sido publicada con éxito.</p>
+        <p className="text-sm text-green-700">{t('form.successBody')}</p>
       </div>
     );
   }
 
   if (formState === 'already_reviewed') {
     return (
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-5 text-center">
-        <p className="text-base font-semibold text-blue-800 mb-1">
-          Ya dejaste una reseña para este negocio.
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-center">
+        <p className="text-base font-semibold text-amber-800 mb-1">
+          {t('form.alreadyTitle')}
         </p>
-        <p className="text-sm text-blue-700">Solo se permite una reseña por usuario.</p>
+        <p className="text-sm text-amber-700">{t('form.alreadyBody')}</p>
       </div>
     );
   }
@@ -180,15 +183,15 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
     const returnTo = `/${businessSlug}#reviews`;
     return (
       <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-5 text-center">
-        <p className="text-base font-semibold text-yellow-800 mb-1">Tu sesión expiró.</p>
+        <p className="text-base font-semibold text-yellow-800 mb-1">{t('form.expiredTitle')}</p>
         <p className="text-sm text-yellow-700 mb-4">
-          Inicia sesión de nuevo para enviar tu reseña.
+          {t('form.expiredBody')}
         </p>
         <Link
           href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
-          className="inline-block bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-block bg-[var(--color-primary)] text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
         >
-          Iniciar sesión
+          {t('form.expiredLogin')}
         </Link>
       </div>
     );
@@ -201,7 +204,7 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Calificación</label>
+        <label className="block text-sm font-medium text-stone-700 mb-2">{t('form.rating')}</label>
         <StarPicker
           value={rating}
           hover={hover}
@@ -213,8 +216,8 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
       </div>
 
       <div>
-        <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 mb-1">
-          Comentario <span className="text-gray-400 font-normal">(opcional)</span>
+        <label htmlFor="review-comment" className="block text-sm font-medium text-stone-700 mb-1">
+          {t('form.comment')} <span className="text-stone-400 font-normal">{t('form.optional')}</span>
         </label>
         <textarea
           id="review-comment"
@@ -223,10 +226,10 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
           disabled={isSubmitting}
           rows={3}
           maxLength={500}
-          placeholder="Comparte tu experiencia con este negocio..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-400 resize-none"
+          placeholder={t('form.placeholder')}
+          className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-stone-50 disabled:text-stone-400 resize-none"
         />
-        <p className="text-right text-xs text-gray-400 mt-0.5">{comment.length} / 500</p>
+        <p className="text-right text-xs text-stone-400 mt-0.5">{comment.length} / 500</p>
       </div>
 
       {errorMsg && (
@@ -238,9 +241,9 @@ export default function ReviewForm({ businessSlug, onReviewSubmitted }: ReviewFo
       <button
         type="submit"
         disabled={!canSubmit}
-        className="w-full bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="w-full bg-[var(--color-primary)] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors disabled:bg-stone-300 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? 'Enviando…' : 'Publicar reseña'}
+        {isSubmitting ? t('form.submitting') : t('form.submit')}
       </button>
     </form>
   );

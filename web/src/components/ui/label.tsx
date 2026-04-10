@@ -8,7 +8,7 @@ type LabelProps = Omit<LabelHTMLAttributes<HTMLLabelElement>, 'children'> & {
 export function Label({ children, className = '', ...props }: LabelProps) {
   return (
     <label
-      className={`mb-1 block text-sm font-medium text-gray-700 ${className}`}
+      className={`mb-1 block text-sm font-medium text-stone-700 ${className}`}
       {...props}
     >
       {children}
