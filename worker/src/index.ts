@@ -19,15 +19,14 @@ app.use(
   })
 );
 
-// Health check
-app.get('/health', (c) => c.json({ status: 'ok', env: c.env.ENVIRONMENT }));
-
-// Routes
-app.route('/businesses', businessesRoutes);
-app.route('/categories', categoriesRoutes);
-app.route('/businesses', reviewsRoutes); // /businesses/:slug/reviews
+const routes = app
+  .get('/health', (c) => c.json({ status: 'ok', env: c.env.ENVIRONMENT }))
+  .route('/businesses', businessesRoutes)
+  .route('/categories', categoriesRoutes)
+  .route('/businesses', reviewsRoutes); // /businesses/:slug/reviews
 
 // 404 handler
 app.notFound((c) => c.json({ error: 'Not found' }, 404));
 
+export type AppType = typeof routes;
 export default app;

@@ -1,3 +1,14 @@
+// Minimal D1 typings shared across the worker and web app for client inference.
+export interface D1PreparedStatementLike {
+  bind(...values: Array<string | number | null>): D1PreparedStatementLike;
+  first<T = unknown>(): Promise<T | null>;
+  all<T = unknown>(): Promise<{ results: T[] }>;
+}
+
+export interface D1DatabaseLike {
+  prepare(query: string): D1PreparedStatementLike;
+}
+
 // D1 type definitions for the directorio database
 
 export interface Category {
@@ -37,6 +48,6 @@ export interface Review {
 }
 
 export interface Env {
-  DB: D1Database;
+  DB: D1DatabaseLike;
   ENVIRONMENT: string;
 }
